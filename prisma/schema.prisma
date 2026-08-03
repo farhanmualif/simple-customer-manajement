@@ -1,0 +1,78 @@
+// Prisma Schema — Sistem Pencatatan Pembayaran WiFi RT/RW Net
+// Referensi kolom: No, Nama, Secrets PPPOE, Alamat, Paket, Tanggal Bayar,
+//                  Status, Lunas (nominal), Blok Area, PPN, Keterangan, Kupon
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  nama      String
+  pinHash   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Paket internet — nama dan harga standar
+model Paket {
+  id        String      @id @default(cuid())
+  namaPaket String      // misal "Paket 165K", "Paket 150K"
+  harga     Int         // dalam ribuan Rupiah, misal 165000
+  aktif     Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  pelanggan Pelanggan[]
+}
+
+// Data pelanggan — sesuai kolom Excel
+model Pelanggan {
+  id                 String       @id @default(cuid())
+  nomorUrut          Int?         // kolom "No" di Excel
+  nama               String       // kolom "Nama"
+  noWhatsapp         String?      // nomor WhatsApp untuk notifikasi
+  secretsPppoe       String?      // kolom "Secrets PPPOE" — username PPPoE router
+  alamat             String?      // kolom "Alamat" / wilayah
+  paketId            String
+  paket              Paket        @relation(fields: [paketId], references: [id])
+  tanggalJatuhTempo  Int          // kolom "Tanggal Bayar" — tanggal 1-31 tiap bulan
+  blokArea           String?      // kolom "Blok area" — info ODP/area
+  ppn                Boolean      @default(false) // kolom "ppn" — y = kena PPN
+  keterangan         String?      // kolom "Keterangan" — info perangkat/catatan teknis
+  kupon              Boolean      @default(false) // kolom "Kupon" — y/b = ada kupon
+  aktif              Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  tagihan            Tagihan[]
+}
+
+// Tagihan per bulan per pelanggan — satu record = satu bulan
+// Ini menggantikan model Pembayaran sebelumnya agar lebih eksplisit
+model Tagihan {
+  id              String         @id @default(cuid())
+  pelangganId     String
+  pelanggan       Pelanggan      @relation(fields: [pelangganId], references: [id])
+  bulan           Int            // 1-12
+  tahun           Int            // misal 2026
+  nominalTagihan  Int            // harga paket bulan ini (bisa beda kalau ada perubahan)
+  nominalBayar    Int?           // nominal yang benar-benar dibayar (kolom "Lunas")
+  status          StatusTagihan  @default(BELUM_BAYAR)
+  tanggalBayar    DateTime?      // tanggal actual pembayaran diterima
+  catatan         String?        // catatan tambahan (dari kolom Keterangan/kolom ke-9)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([pelangganId, bulan, tahun]) // satu record per pelanggan per bulan
+  @@index([bulan, tahun])               // query per periode cepat
+  @@index([status])
+}
+
+enum StatusTagihan {
+  LUNAS       // sudah bayar
+  BELUM_BAYAR // belum bayar
+  ISOLIR      // diputus sementara (belum bayar lebih dari 1 bulan / kebijakan admin)
+}

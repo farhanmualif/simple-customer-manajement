@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-size: 16px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-800 antialiased;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior: none;
+  }
+
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  /* Safe area for notch/home indicator */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Balance card gradients */
+  .balance-card {
+    @apply rounded-2xl p-5 text-white relative overflow-hidden;
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #818cf8 100%);
+  }
+
+  .balance-card-green {
+    background: linear-gradient(135deg, #15803d 0%, #22c55e 60%, #4ade80 100%);
+  }
+
+  .balance-card-red {
+    background: linear-gradient(135deg, #be123c 0%, #f43f5e 60%, #fb7185 100%);
+  }
+
+  .skeleton {
+    @apply bg-slate-200 rounded-lg animate-pulse;
+  }
+
+  /* Desktop sidebar width */
+  .sidebar-width {
+    width: 260px;
+    min-width: 260px;
+  }
+
+  /* Hide scrollbar but allow scroll */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
