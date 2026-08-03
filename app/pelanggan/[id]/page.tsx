@@ -44,19 +44,12 @@ function TagihanForm({
   onSaved: () => void;
 }) {
   const now = getBulanTahunSekarang();
-  // Izinkan input tagihan hingga 1 bulan ke depan dari sekarang
-  const nextMonth = geserBulan(now.bulan, now.tahun, 1);
-  const maxBulan = nextMonth.bulan;
-  const maxTahun = nextMonth.tahun;
 
-  // State periode tagihan — bisa dipilih antara bulan ini sampai 1 bulan ke depan
+  // State periode tagihan — bebas pilih bulan manapun
   const [periodeTagihan, setPeriodeTagihan] = useState({ bulan, tahun });
   const isBulanDepan =
-    periodeTagihan.tahun > tahun ||
-    (periodeTagihan.tahun === tahun && periodeTagihan.bulan > bulan);
-  const isMaxPeriode =
-    periodeTagihan.tahun > maxTahun ||
-    (periodeTagihan.tahun === maxTahun && periodeTagihan.bulan >= maxBulan);
+    periodeTagihan.tahun > now.tahun ||
+    (periodeTagihan.tahun === now.tahun && periodeTagihan.bulan > now.bulan);
 
   const [status, setStatus]   = useState<StatusTagihan>(currentStatus);
   const [nominal, setNominal] = useState(String(currentNominal ?? hargaPaket));
@@ -136,8 +129,7 @@ function TagihanForm({
                 const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, 1);
                 setPeriodeTagihan(p); setOk(false);
               }}
-              disabled={isMaxPeriode}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition-colors disabled:opacity-30"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -180,7 +172,6 @@ function TagihanForm({
                 value={nominal}
                 onChange={(e) => { setNominal(e.target.value.replace(/\D/g, "")); setErr(""); }}
                 placeholder={String(hargaPaket)}
-                autoFocus
               />
             </div>
             {parseInt(nominal, 10) !== hargaPaket && parseInt(nominal, 10) > 0 && (
@@ -281,8 +272,7 @@ function DetailContent({ id }: { id: string }) {
       </span>
       <button
         onClick={() => { const p = geserBulan(periode.bulan, periode.tahun, 1); handlePeriodeChange(p.bulan, p.tahun); }}
-        disabled={isSekarang}
-        className="w-8 h-8 flex items-center justify-center rounded-lg text-white lg:text-slate-600 hover:bg-white/20 lg:hover:bg-slate-200 active:bg-white/30 disabled:opacity-30"
+        className="w-8 h-8 flex items-center justify-center rounded-lg text-white lg:text-slate-600 hover:bg-white/20 lg:hover:bg-slate-200 active:bg-white/30"
       >
         <ChevronRight className="w-4 h-4" />
       </button>

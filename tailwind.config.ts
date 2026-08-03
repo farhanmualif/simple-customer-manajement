@@ -9,6 +9,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        // Mobile-optimized font sizes — lebih besar dari Tailwind default
+        xs:   ["0.875rem",  { lineHeight: "1.375rem" }],  // 14px (was 12px)
+        sm:   ["1rem",      { lineHeight: "1.5rem" }],    // 16px (was 14px)
+        base: ["1.0625rem", { lineHeight: "1.625rem" }],  // 17px (was 16px)
+        lg:   ["1.1875rem", { lineHeight: "1.75rem" }],   // 19px (was 18px)
+        xl:   ["1.3125rem", { lineHeight: "1.875rem" }],  // 21px (was 20px)
+        "2xl":["1.5rem",    { lineHeight: "2rem" }],      // 24px tetap
+      },
       colors: {
         // Brand palette — modern dark blue base
         brand: {
