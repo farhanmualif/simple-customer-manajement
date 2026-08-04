@@ -77,25 +77,25 @@ function PeriodeNav({
 }
 
 /* ── Tabel Belum Bayar ── */
-function TabelBelumBayar({ bulan, tahun, refreshKey }: { bulan: number; tahun: number; refreshKey: number }) {
+function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: number; tahun: number; refreshKey: number; isLoading: boolean }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
     const fetch_ = async () => {
-      setLoading(true);
+      setFetching(true);
       try {
         const res = await fetch(`/api/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=belum_bayar&limit=5&page=1`);
         const json = await res.json();
         setList(json.data ?? []);
       } catch { /* silent */ }
-      finally { setLoading(false); }
+      finally { setFetching(false); }
     };
     fetch_();
   }, [bulan, tahun, refreshKey]);
 
-  if (loading) return <SkeletonTabel warna="merah" />;
+  if (isLoading || fetching) return <SkeletonTabel warna="merah" />;
 
   return (
     <div className="glass-card p-6">
@@ -143,25 +143,25 @@ function TabelBelumBayar({ bulan, tahun, refreshKey }: { bulan: number; tahun: n
 }
 
 /* ── Tabel Sudah Bayar ── */
-function TabelSudahBayar({ bulan, tahun, refreshKey }: { bulan: number; tahun: number; refreshKey: number }) {
+function TabelSudahBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: number; tahun: number; refreshKey: number; isLoading: boolean }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
     const fetch_ = async () => {
-      setLoading(true);
+      setFetching(true);
       try {
         const res = await fetch(`/api/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=lunas&limit=5&page=1`);
         const json = await res.json();
         setList(json.data ?? []);
       } catch { /* silent */ }
-      finally { setLoading(false); }
+      finally { setFetching(false); }
     };
     fetch_();
   }, [bulan, tahun, refreshKey]);
 
-  if (loading) return <SkeletonTabel warna="hijau" />;
+  if (isLoading || fetching) return <SkeletonTabel warna="hijau" />;
 
   return (
     <div className="glass-card p-6">
@@ -459,8 +459,8 @@ function DashboardContent() {
 
         {/* ── Row 3: 2 tabel ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TabelBelumBayar bulan={periode.bulan} tahun={periode.tahun} refreshKey={refreshKey} />
-          <TabelSudahBayar bulan={periode.bulan} tahun={periode.tahun} refreshKey={refreshKey} />
+          <TabelBelumBayar bulan={periode.bulan} tahun={periode.tahun} refreshKey={refreshKey} isLoading={loading} />
+          <TabelSudahBayar bulan={periode.bulan} tahun={periode.tahun} refreshKey={refreshKey} isLoading={loading} />
         </div>
 
       </div>
