@@ -294,13 +294,16 @@ function DashboardContent() {
       {/* Dashboard content area */}
       <div className="p-4 lg:p-8 flex-1 overflow-y-auto space-y-6">
 
-        {/* Mobile: sub-bar periode nav */}
-        <div className="lg:hidden -mx-4 -mt-4 px-4 py-3 border-b border-gray-200 bg-white/90 flex items-center justify-between">
+        {/* Mobile: sub-bar periode nav — warna navy matching topbar */}
+        <div
+          className="lg:hidden -mx-4 -mt-4 px-4 py-3 flex items-center justify-between border-b border-white/10"
+          style={{ background: "linear-gradient(135deg, #0B1120 0%, #11244C 60%, #1a3a7a 100%)" }}
+        >
           <PeriodeNav bulan={periode.bulan} tahun={periode.tahun} onChange={handlePeriodeChange} />
           {!isSekarang && (
             <button
               onClick={() => handlePeriodeChange(now.bulan, now.tahun)}
-              className="text-xs text-brand font-semibold underline ml-2 shrink-0"
+              className="text-xs text-blue-200 font-semibold underline ml-2 shrink-0"
             >
               Bulan ini
             </button>
