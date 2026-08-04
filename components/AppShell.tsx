@@ -236,9 +236,8 @@ export function AppShell({
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-        {/* ── Mobile Header: hamburger | title | ONE action slot ── */}
-        <header className="lg:hidden bg-brand-700 sticky top-0 z-30 shadow-sm">
-          {/* Row 1: nav controls */}
+        {/* ── Mobile Header ── */}
+        <header className="lg:hidden bg-brand-900 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-2 px-3 pt-3 pb-2">
             <button
               onClick={() => setDrawerOpen(true)}

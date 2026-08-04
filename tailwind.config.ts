@@ -10,33 +10,33 @@ const config: Config = {
   theme: {
     extend: {
       fontSize: {
-        // Mobile-optimized font sizes — lebih besar dari Tailwind default
-        xs:   ["0.875rem",  { lineHeight: "1.375rem" }],  // 14px (was 12px)
-        sm:   ["1rem",      { lineHeight: "1.5rem" }],    // 16px (was 14px)
-        base: ["1.0625rem", { lineHeight: "1.625rem" }],  // 17px (was 16px)
-        lg:   ["1.1875rem", { lineHeight: "1.75rem" }],   // 19px (was 18px)
-        xl:   ["1.3125rem", { lineHeight: "1.875rem" }],  // 21px (was 20px)
-        "2xl":["1.5rem",    { lineHeight: "2rem" }],      // 24px tetap
+        xs:    ["0.875rem",  { lineHeight: "1.375rem" }],
+        sm:    ["1rem",      { lineHeight: "1.5rem" }],
+        base:  ["1.0625rem", { lineHeight: "1.625rem" }],
+        lg:    ["1.1875rem", { lineHeight: "1.75rem" }],
+        xl:    ["1.3125rem", { lineHeight: "1.875rem" }],
+        "2xl": ["1.5rem",    { lineHeight: "2rem" }],
       },
       colors: {
-        // Brand palette — modern dark blue base
+        // ── Brand: Zoom-style deep navy → blue ──────────────────
         brand: {
-          50:  "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
-          950: "#1e1b4b",
+          50:  "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e3a8a",   // navy utama — mirip Zoom dark bg
+          900: "#172554",   // navy gelap untuk sidebar
+          950: "#0f172a",   // paling gelap
         },
-        // Status colors
+        // ── Status colors — lebih soft, tidak mencolok ───────────
         success: {
           50:  "#f0fdf4",
           100: "#dcfce7",
+          200: "#bbf7d0",
           400: "#4ade80",
           500: "#22c55e",
           600: "#16a34a",
@@ -45,6 +45,7 @@ const config: Config = {
         danger: {
           50:  "#fff1f2",
           100: "#ffe4e6",
+          200: "#fecdd3",
           400: "#fb7185",
           500: "#f43f5e",
           600: "#e11d48",
@@ -59,13 +60,13 @@ const config: Config = {
         },
       },
       borderRadius: {
-        xl:  "0.75rem",
+        xl:    "0.75rem",
         "2xl": "1rem",
         "3xl": "1.5rem",
       },
       boxShadow: {
-        card:    "0 2px 16px 0 rgba(99,102,241,0.08)",
-        "card-md": "0 4px 24px 0 rgba(99,102,241,0.12)",
+        card:      "0 1px 12px 0 rgba(30,58,138,0.07)",
+        "card-md": "0 4px 20px 0 rgba(30,58,138,0.10)",
       },
       keyframes: {
         shake: {
@@ -81,7 +82,7 @@ const config: Config = {
         },
       },
       animation: {
-        shake:   "shake 0.4s ease-in-out",
+        shake:     "shake 0.4s ease-in-out",
         "fade-in": "fade-in 0.25s ease-out",
       },
     },

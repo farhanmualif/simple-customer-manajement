@@ -10,19 +10,14 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    /* Mobile: base 18px — lebih besar & mudah dibaca */
     font-size: 18px;
     scroll-behavior: smooth;
   }
 
-  /* Desktop: 16px karena layar lebih besar */
   @media (min-width: 1024px) {
-    html {
-      font-size: 16px;
-    }
+    html { font-size: 16px; }
   }
 
-  /* Desktop: kembalikan text-xs dan text-sm ke ukuran standar Tailwind */
   @media (min-width: 1024px) {
     .text-xs   { font-size: 0.75rem;  line-height: 1rem; }
     .text-sm   { font-size: 0.875rem; line-height: 1.25rem; }
@@ -32,7 +27,7 @@
   }
 
   body {
-    @apply bg-slate-100 text-slate-800 antialiased;
+    @apply bg-slate-50 text-slate-800 antialiased;
     min-height: 100dvh;
     min-height: -webkit-fill-available;
     overscroll-behavior: none;
@@ -44,44 +39,49 @@
 }
 
 @layer utilities {
-  /* Safe area for notch/home indicator */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 16px);
-  }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top, 0px);
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+
+  /* ── Sidebar navy gelap ── */
+  .sidebar-width {
+    width: 260px;
+    min-width: 260px;
   }
 
-  /* Balance card gradients */
+  /* ── Balance card utama: navy → blue gradient (Zoom-style) ── */
   .balance-card {
     @apply rounded-2xl p-5 text-white relative overflow-hidden;
-    background: linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #818cf8 100%);
+    background: linear-gradient(135deg, #172554 0%, #1e3a8a 40%, #2563eb 100%);
   }
 
+  /* ── Pemasukan: soft teal-green, tidak terlalu mencolok ── */
   .balance-card-green {
-    background: linear-gradient(135deg, #15803d 0%, #22c55e 60%, #4ade80 100%);
+    background: linear-gradient(135deg, #14532d 0%, #16a34a 60%, #4ade80 100%);
   }
 
+  /* ── Belum bayar: soft rose-red ── */
   .balance-card-red {
-    background: linear-gradient(135deg, #be123c 0%, #f43f5e 60%, #fb7185 100%);
+    background: linear-gradient(135deg, #881337 0%, #e11d48 60%, #fb7185 100%);
+  }
+
+  /* ── Dashboard page background: Zoom-style biru tua → putih ── */
+  .dashboard-bg {
+    background: linear-gradient(180deg,
+      #1e3a8a 0%,
+      #2563eb 28%,
+      #eff6ff 55%,
+      #f8fafc 100%
+    );
+    min-height: 100%;
   }
 
   .skeleton {
     @apply bg-slate-200 rounded-lg animate-pulse;
   }
 
-  /* Desktop sidebar width */
-  .sidebar-width {
-    width: 260px;
-    min-width: 260px;
-  }
-
-  /* Hide scrollbar but allow scroll */
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }
