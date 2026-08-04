@@ -90,9 +90,15 @@ function TabelBelumBayar({
           <tbody className="divide-y divide-gray-50">
             {loading
               ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={3} className="py-3">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                <tr key={i} className="animate-pulse">
+                  <td className="py-3.5 pr-4">
+                    <div className="h-3.5 bg-accent-red-light rounded w-28" />
+                  </td>
+                  <td className="py-3.5 pr-4">
+                    <div className="h-3.5 bg-accent-red-light rounded w-20" />
+                  </td>
+                  <td className="py-3.5 text-right">
+                    <div className="h-3.5 bg-accent-red-light rounded w-10 ml-auto" />
                   </td>
                 </tr>
               ))
@@ -105,7 +111,7 @@ function TabelBelumBayar({
                   </tr>
                 )
                 : list.map((p) => (
-                  <tr key={p.id} className="text-sm">
+                  <tr key={p.id} className="text-sm hover:bg-accent-red-light/20 transition-colors">
                     <td className="py-3 font-medium text-gray-700">{p.nama}</td>
                     <td className="py-3 text-gray-600">{formatRupiah(p.paket.harga)}</td>
                     <td className="py-3 text-right">
@@ -169,9 +175,15 @@ function TabelSudahBayar({
           <tbody className="divide-y divide-gray-50">
             {loading
               ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={3} className="py-3">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                <tr key={i} className="animate-pulse">
+                  <td className="py-3.5 pr-4">
+                    <div className="h-3.5 bg-accent-green-light rounded w-28" />
+                  </td>
+                  <td className="py-3.5 pr-4">
+                    <div className="h-3.5 bg-accent-green-light rounded w-14" />
+                  </td>
+                  <td className="py-3.5 text-right">
+                    <div className="h-3.5 bg-accent-green-light rounded w-10 ml-auto" />
                   </td>
                 </tr>
               ))
@@ -184,7 +196,7 @@ function TabelSudahBayar({
                   </tr>
                 )
                 : list.map((p) => (
-                  <tr key={p.id} className="text-sm">
+                  <tr key={p.id} className="text-sm hover:bg-accent-green-light/30 transition-colors">
                     <td className="py-3 font-medium text-gray-700">{p.nama}</td>
                     <td className="py-3">
                       <span className="text-accent-green font-medium">Lunas</span>
