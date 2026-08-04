@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search, Plus, X, Wifi, Users, CheckCircle2, Clock, WifiOff,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Calendar,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AppShell } from "@/components/AppShell";
@@ -163,6 +163,7 @@ function PelangganListContent() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+  const [tanggalBayar, setTanggalBayar] = useState(""); // "" = semua, "1"-"31" = filter tanggal
   const LIMIT = 20;
 
   useEffect(() => {
@@ -181,6 +182,7 @@ function PelangganListContent() {
         page: String(targetPage),
         limit: String(LIMIT),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        ...(tanggalBayar    ? { tanggalBayar }            : {}),
       });
       const res = await fetch(`/api/pelanggan?${p}`);
       if (!res.ok) throw new Error();
@@ -192,12 +194,12 @@ function PelangganListContent() {
     } finally {
       setLoading(false);
     }
-  }, [periode, filter, debouncedSearch, page, LIMIT]);
+  }, [periode, filter, debouncedSearch, tanggalBayar, page, LIMIT]);
 
   useEffect(() => { fetchList(page); }, [fetchList, page]);
 
-  // Reset ke halaman 1 saat filter/search/periode berubah
-  useEffect(() => { setPage(1); }, [periode, filter, debouncedSearch]);
+  // Reset ke halaman 1 saat filter/search/periode/tanggal berubah
+  useEffect(() => { setPage(1); }, [periode, filter, debouncedSearch, tanggalBayar]);
 
   const handlePeriodeChange = (b: number, t: number) => {
     setPeriode({ bulan: b, tahun: t });
@@ -281,6 +283,44 @@ function PelangganListContent() {
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Filter tanggal bayar */}
+          <div className="px-3 pb-2">
+            <div className="relative flex items-center gap-2">
+              <div className="relative flex-1">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={31}
+                  placeholder="Filter tanggal bayar (1–31)..."
+                  value={tanggalBayar}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // Hanya izinkan 1-31
+                    if (val === "" || (parseInt(val) >= 1 && parseInt(val) <= 31)) {
+                      setTanggalBayar(val);
+                    }
+                  }}
+                  className="w-full h-11 bg-white rounded-xl border border-slate-200 pl-10 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow"
+                />
+                {tanggalBayar && (
+                  <button
+                    onClick={() => setTanggalBayar("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <X className="w-4 h-4 text-slate-400" />
+                  </button>
+                )}
+              </div>
+            </div>
+            {tanggalBayar && (
+              <p className="text-xs text-brand-600 font-medium mt-1 px-1">
+                Menampilkan pelanggan yang bayar tanggal {tanggalBayar}
+              </p>
+            )}
           </div>
 
           {/* Filter chips */}

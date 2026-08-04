@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { parsePeriodeQuery } from "@/lib/utils";
 
-// GET /api/pelanggan?bulan=8&tahun=2026&search=&filter=semua&page=1&limit=20
+// GET /api/pelanggan?bulan=8&tahun=2026&search=&filter=semua&page=1&limit=20&tanggalBayar=5
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -16,25 +16,27 @@ export async function GET(req: NextRequest) {
       searchParams.get("bulan"),
       searchParams.get("tahun")
     );
-    const search = searchParams.get("search") ?? "";
-    const filter = searchParams.get("filter") ?? "semua";
-    const page   = Math.max(1, parseInt(searchParams.get("page")  ?? "1",  10));
-    const limit  = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const search       = searchParams.get("search") ?? "";
+    const filter       = searchParams.get("filter") ?? "semua";
+    const page         = Math.max(1, parseInt(searchParams.get("page")  ?? "1",  10));
+    const limit        = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const tanggalBayar = searchParams.get("tanggalBayar"); // "1"-"31" atau null
 
     const where = {
       aktif: true,
       ...(search ? { nama: { contains: search, mode: "insensitive" as const } } : {}),
     };
 
-    // Kalau ada filter status, ambil semua dulu (filter dilakukan setelah join tagihan)
-    // Kalau tidak ada filter, pakai DB-level pagination
-    const needsStatusFilter = filter !== "semua";
+    // Filter tanggal bayar: harus join tagihan, filter di memory
+    const needsStatusFilter  = filter !== "semua";
+    const needsTanggalFilter = tanggalBayar !== null && tanggalBayar !== "";
+    const needsMemoryFilter  = needsStatusFilter || needsTanggalFilter;
 
     let pelangganList;
     let totalCount: number;
 
-    if (needsStatusFilter) {
-      // Ambil semua yang match search, filter status di memory
+    if (needsMemoryFilter) {
+      // Ambil semua yang match search, filter di memory
       pelangganList = await prisma.pelanggan.findMany({
         where,
         include: {
@@ -44,16 +46,29 @@ export async function GET(req: NextRequest) {
         orderBy: [{ nomorUrut: "asc" }, { nama: "asc" }],
       });
 
-      const mapped = pelangganList.map((p) => mapPelanggan(p, bulan, tahun));
+      let mapped = pelangganList.map((p) => mapPelanggan(p, bulan, tahun));
 
-      const filtered =
-        filter === "lunas"       ? mapped.filter((p) => p.statusBulanIni === "LUNAS") :
-        filter === "belum_bayar" ? mapped.filter((p) => p.statusBulanIni === "BELUM_BAYAR") :
-        filter === "isolir"      ? mapped.filter((p) => p.statusBulanIni === "ISOLIR") :
-        mapped;
+      // Filter status
+      if (needsStatusFilter) {
+        mapped =
+          filter === "lunas"       ? mapped.filter((p) => p.statusBulanIni === "LUNAS") :
+          filter === "belum_bayar" ? mapped.filter((p) => p.statusBulanIni === "BELUM_BAYAR") :
+          filter === "isolir"      ? mapped.filter((p) => p.statusBulanIni === "ISOLIR") :
+          mapped;
+      }
 
-      totalCount = filtered.length;
-      const paginated = filtered.slice((page - 1) * limit, page * limit);
+      // Filter tanggal bayar — cari pelanggan yang bayar pada tanggal tertentu
+      if (needsTanggalFilter) {
+        const tgl = parseInt(tanggalBayar!, 10);
+        mapped = mapped.filter((p) => {
+          if (!p.tanggalBayarBulanIni) return false;
+          const d = new Date(p.tanggalBayarBulanIni);
+          return d.getDate() === tgl;
+        });
+      }
+
+      totalCount = mapped.length;
+      const paginated = mapped.slice((page - 1) * limit, page * limit);
 
       return NextResponse.json({
         data: paginated, bulan, tahun,
