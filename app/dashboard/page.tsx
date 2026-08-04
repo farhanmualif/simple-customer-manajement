@@ -249,10 +249,13 @@ function DashboardContent() {
     : 0;
   const isSekarang = periode.bulan === now.bulan && periode.tahun === now.tahun;
 
-  /* Header right: periode nav + refresh — persis referensi */
+  /* Header right: hanya refresh di mobile, periode nav + refresh di desktop */
   const headerRight = (
     <div className="flex items-center gap-3">
-      <PeriodeNav bulan={periode.bulan} tahun={periode.tahun} onChange={handlePeriodeChange} />
+      {/* PeriodeNav — desktop only di header */}
+      <div className="hidden lg:flex">
+        <PeriodeNav bulan={periode.bulan} tahun={periode.tahun} onChange={handlePeriodeChange} />
+      </div>
       <button
         onClick={() => fetchData(periode.bulan, periode.tahun)}
         disabled={loading}
@@ -270,8 +273,21 @@ function DashboardContent() {
       pageSubtitle={formatBulanTahun(periode.bulan, periode.tahun)}
       headerRight={headerRight}
     >
-      {/* Dashboard content area — padding sesuai referensi */}
+      {/* Dashboard content area */}
       <div className="p-4 lg:p-8 flex-1 overflow-y-auto space-y-6">
+
+        {/* Mobile: sub-bar periode nav */}
+        <div className="lg:hidden -mx-4 -mt-4 px-4 py-3 border-b border-gray-200 bg-white/90 flex items-center justify-between">
+          <PeriodeNav bulan={periode.bulan} tahun={periode.tahun} onChange={handlePeriodeChange} />
+          {!isSekarang && (
+            <button
+              onClick={() => handlePeriodeChange(now.bulan, now.tahun)}
+              className="text-xs text-brand font-semibold underline ml-2 shrink-0"
+            >
+              Bulan ini
+            </button>
+          )}
+        </div>
 
         {/* Banner bulan lampau */}
         {!isSekarang && (
@@ -357,27 +373,28 @@ function DashboardContent() {
 
           {/* Status Pembayaran — lg:col-span-2 */}
           {loading ? <SkeletonCard h="h-64" /> : (
-            <div className="glass-card p-6 lg:col-span-2">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-accent-blue-light text-accent-blue flex items-center justify-center">
-                    <Users className="w-6 h-6" />
+            <div className="glass-card p-5 lg:p-6 lg:col-span-2">
+              {/* Header card — stack di mobile, berdampingan di desktop */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg bg-accent-blue-light text-accent-blue flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 lg:w-6 lg:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">Status Pembayaran</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="text-base lg:text-lg font-bold text-gray-900">Status Pembayaran</h3>
+                    <p className="text-xs lg:text-sm text-gray-500">
                       {formatBulanTahun(data!.bulan, data!.tahun)} · {data!.totalPelangganAktif} aktif
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-brand">{progressPersen}%</div>
-                  <div className="text-sm text-gray-400">sudah lunas</div>
+                <div className="flex items-center gap-2 sm:text-right sm:block">
+                  <div className="text-2xl lg:text-3xl font-bold text-brand">{progressPersen}%</div>
+                  <div className="text-xs text-gray-400">sudah lunas</div>
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-gray-100 rounded-full h-3 mb-8 overflow-hidden">
+              <div className="w-full bg-gray-100 rounded-full h-3 mb-5 overflow-hidden">
                 <div
                   className="h-3 rounded-full transition-all duration-700"
                   style={{ width: `${progressPersen}%`, background: "#254395" }}
@@ -385,34 +402,34 @@ function DashboardContent() {
               </div>
 
               {/* 3 tiles */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 lg:gap-4">
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=lunas`)}
-                  className="bg-accent-green-light/50 border border-accent-green-light rounded-xl p-4 text-center hover:bg-accent-green-light transition-colors"
+                  className="bg-accent-green-light/50 border border-accent-green-light rounded-xl p-3 lg:p-4 text-center hover:bg-accent-green-light transition-colors"
                 >
-                  <div className="text-4xl font-bold text-accent-green-text mb-1">{data!.jumlahLunas}</div>
-                  <div className="flex justify-center items-center gap-1 text-accent-green-text text-sm font-medium">
-                    <CheckCircle2 className="w-4 h-4" /> Lunas
+                  <div className="text-2xl lg:text-4xl font-bold text-accent-green-text mb-1">{data!.jumlahLunas}</div>
+                  <div className="flex justify-center items-center gap-1 text-accent-green-text text-xs lg:text-sm font-medium">
+                    <CheckCircle2 className="w-3 h-3 shrink-0" /> Lunas
                   </div>
                 </button>
 
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=belum_bayar`)}
-                  className="bg-accent-red-light/50 border border-accent-red-light rounded-xl p-4 text-center hover:bg-accent-red-light transition-colors"
+                  className="bg-accent-red-light/50 border border-accent-red-light rounded-xl p-3 lg:p-4 text-center hover:bg-accent-red-light transition-colors"
                 >
-                  <div className="text-4xl font-bold text-accent-red-text mb-1">{data!.jumlahBelumBayar}</div>
-                  <div className="flex justify-center items-center gap-1 text-accent-red-text text-sm font-medium">
-                    <Clock className="w-4 h-4" /> Belum Bayar
+                  <div className="text-2xl lg:text-4xl font-bold text-accent-red-text mb-1">{data!.jumlahBelumBayar}</div>
+                  <div className="flex justify-center items-center gap-1 text-accent-red-text text-xs lg:text-sm font-medium leading-tight">
+                    <Clock className="w-3 h-3 shrink-0" /><span>Belum Bayar</span>
                   </div>
                 </button>
 
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=isolir`)}
-                  className="bg-accent-gray-light border border-gray-200 rounded-xl p-4 text-center hover:bg-gray-200 transition-colors"
+                  className="bg-accent-gray-light border border-gray-200 rounded-xl p-3 lg:p-4 text-center hover:bg-gray-200 transition-colors"
                 >
-                  <div className="text-4xl font-bold text-gray-700 mb-1">{data!.jumlahIsolir}</div>
-                  <div className="flex justify-center items-center gap-1 text-gray-500 text-sm font-medium">
-                    <WifiOff className="w-4 h-4" /> Isolir
+                  <div className="text-2xl lg:text-4xl font-bold text-gray-700 mb-1">{data!.jumlahIsolir}</div>
+                  <div className="flex justify-center items-center gap-1 text-gray-500 text-xs lg:text-sm font-medium">
+                    <WifiOff className="w-3 h-3 shrink-0" /> Isolir
                   </div>
                 </button>
               </div>
