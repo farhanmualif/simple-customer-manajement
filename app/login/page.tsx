@@ -2,79 +2,17 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Wifi, Delete, LayoutDashboard, Users, ChevronRight } from "lucide-react";
+import { Wifi, Delete } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PIN_LENGTH = 4;
 
-// ── Modal pilih halaman setelah login berhasil ────────────────────────────────
-function ModalPilihHalaman({ onPilih }: { onPilih: (href: string) => void }) {
-  return (
-    // Backdrop
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-      {/* Sheet — slide up di mobile, centered di desktop */}
-      <div className="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-fade-in">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 text-center border-b border-slate-100">
-          <div className="w-10 h-10 rounded-2xl bg-success-100 flex items-center justify-center mx-auto mb-3">
-            <Wifi className="w-5 h-5 text-success-600" strokeWidth={2.5} />
-          </div>
-          <h2 className="text-lg font-bold text-slate-800">Login Berhasil!</h2>
-          <p className="text-sm text-slate-500 mt-1">Mau ke mana dulu?</p>
-        </div>
-
-        {/* Pilihan */}
-        <div className="p-4 space-y-3">
-          {/* Dashboard */}
-          <button
-            onClick={() => onPilih("/dashboard")}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-brand-50 border-2 border-brand-200 hover:border-brand-400 hover:bg-brand-100 active:scale-[0.98] transition-all text-left group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center shrink-0 shadow-md">
-              <LayoutDashboard className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-slate-800 text-base">Dashboard</p>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Lihat ringkasan pemasukan bulan ini
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-brand-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-
-          {/* Data Pelanggan */}
-          <button
-            onClick={() => onPilih("/pelanggan")}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-success-50 border-2 border-success-200 hover:border-success-400 hover:bg-success-100 active:scale-[0.98] transition-all text-left group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-success-600 flex items-center justify-center shrink-0 shadow-md">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-slate-800 text-base">Data Pelanggan</p>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Cari pelanggan &amp; tandai sudah bayar
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-success-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        </div>
-
-        {/* Safe area untuk home indicator */}
-        <div className="pb-safe pb-4" />
-      </div>
-    </div>
-  );
-}
-
-// ── Halaman Login ─────────────────────────────────────────────────────────────
 export default function LoginPage() {
   const router = useRouter();
   const [pin, setPin] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (pin.length === PIN_LENGTH) {
@@ -99,8 +37,7 @@ export default function LoginPage() {
         setShake(true);
         setTimeout(() => setShake(false), 500);
       } else {
-        // PIN benar → tampilkan modal pilih halaman
-        setShowModal(true);
+        router.replace("/dashboard");
       }
     } catch {
       setError("Tidak bisa terhubung. Coba lagi.");
@@ -112,14 +49,9 @@ export default function LoginPage() {
     }
   };
 
-  const handlePilih = (href: string) => {
-    setShowModal(false);
-    router.replace(href);
-  };
-
   const handleKey = useCallback(
     (val: string) => {
-      if (loading || showModal) return;
+      if (loading) return;
       setError("");
       if (val === "del") {
         setPin((p) => p.slice(0, -1));
@@ -127,7 +59,7 @@ export default function LoginPage() {
         setPin((p) => p + val);
       }
     },
-    [pin, loading, showModal]
+    [pin, loading]
   );
 
   useEffect(() => {
@@ -143,9 +75,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Modal pilih halaman */}
-      {showModal && <ModalPilihHalaman onPilih={handlePilih} />}
-
       {/* Left panel — desktop only */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 flex-col items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-white/5" />
@@ -177,7 +106,6 @@ export default function LoginPage() {
       {/* Right panel — PIN entry */}
       <div className="flex-1 lg:max-w-md flex flex-col bg-gradient-to-b from-brand-800 via-brand-700 to-brand-600 lg:bg-white">
         <div className="flex-1 flex flex-col items-center justify-center px-8 pt-16 pb-8 lg:pt-0 lg:pb-0 lg:bg-white lg:px-12">
-
           {/* Mobile logo */}
           <div className="lg:hidden w-20 h-20 rounded-3xl bg-white/15 flex items-center justify-center mb-6 shadow-lg">
             <Wifi className="w-10 h-10 text-white" strokeWidth={2.5} />
@@ -206,7 +134,7 @@ export default function LoginPage() {
             ))}
           </div>
 
-          {/* Error / success feedback */}
+          {/* Error */}
           <div className="h-6 flex items-center mb-6">
             {error && (
               <p className="text-red-300 lg:text-danger-600 text-sm font-medium animate-fade-in">
@@ -225,7 +153,7 @@ export default function LoginPage() {
                     <button
                       key={idx}
                       onPointerDown={() => handleKey("del")}
-                      disabled={loading || pin.length === 0 || showModal}
+                      disabled={loading || pin.length === 0}
                       aria-label="Hapus"
                       className={cn(
                         "h-16 w-full rounded-2xl flex items-center justify-center transition-all",
@@ -242,7 +170,7 @@ export default function LoginPage() {
                   <button
                     key={idx}
                     onPointerDown={() => handleKey(key)}
-                    disabled={loading || pin.length >= PIN_LENGTH || showModal}
+                    disabled={loading || pin.length >= PIN_LENGTH}
                     aria-label={key}
                     className={cn(
                       "h-16 w-full rounded-2xl flex items-center justify-center text-2xl font-semibold transition-all duration-100",
