@@ -26,8 +26,11 @@
     .text-xl   { font-size: 1.25rem;  line-height: 1.75rem; }
   }
 
+  /* Body: dark navy gradient background persis referensi */
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
+    background: linear-gradient(135deg, #0B1120 0%, #11244C 50%, #1D4ED8 100%);
+    background-attachment: fixed;
+    @apply text-gray-800 antialiased;
     min-height: 100dvh;
     min-height: -webkit-fill-available;
     overscroll-behavior: none;
@@ -42,41 +45,34 @@
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
   .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
 
-  /* ── Sidebar navy gelap ── */
+  /* ── Glassmorphism card — putih transparan seperti referensi ── */
+  .glass-card {
+    @apply bg-white/95 backdrop-blur-md rounded-xl border border-white/20;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  }
+
+  /* ── Balance card: brand gradient persis referensi ── */
+  .balance-card {
+    @apply rounded-xl p-6 text-white relative overflow-hidden;
+    background: linear-gradient(135deg, #254395 0%, #3354B4 100%);
+    box-shadow: 0 8px 25px -5px rgba(37,67,149,0.4);
+  }
+
+  /* ── Sidebar glassmorphism ── */
+  .sidebar-glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
   .sidebar-width {
     width: 260px;
     min-width: 260px;
   }
 
-  /* ── Balance card utama: navy → blue gradient (Zoom-style) ── */
-  .balance-card {
-    @apply rounded-2xl p-5 text-white relative overflow-hidden;
-    background: linear-gradient(135deg, #172554 0%, #1e3a8a 40%, #2563eb 100%);
-  }
-
-  /* ── Pemasukan: soft teal-green, tidak terlalu mencolok ── */
-  .balance-card-green {
-    background: linear-gradient(135deg, #14532d 0%, #16a34a 60%, #4ade80 100%);
-  }
-
-  /* ── Belum bayar: soft rose-red ── */
-  .balance-card-red {
-    background: linear-gradient(135deg, #881337 0%, #e11d48 60%, #fb7185 100%);
-  }
-
-  /* ── Dashboard page background: Zoom-style biru tua → putih ── */
-  .dashboard-bg {
-    background: linear-gradient(180deg,
-      #1e3a8a 0%,
-      #2563eb 28%,
-      #eff6ff 55%,
-      #f8fafc 100%
-    );
-    min-height: 100%;
-  }
-
   .skeleton {
-    @apply bg-slate-200 rounded-lg animate-pulse;
+    @apply bg-white/20 rounded-lg animate-pulse;
   }
 
   .scrollbar-none {
@@ -84,4 +80,31 @@
     scrollbar-width: none;
   }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* ── Accent corner decorations (seperti referensi) ── */
+  .accent-corner-green::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 8rem;
+    height: 8rem;
+    background: #EAF8ED;
+    border-radius: 9999px 0 0 0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .accent-corner-red::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 8rem;
+    height: 8rem;
+    background: #FCECEC;
+    border-radius: 9999px 0 0 0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }

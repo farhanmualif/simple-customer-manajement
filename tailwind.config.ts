@@ -18,8 +18,11 @@ const config: Config = {
         "2xl": ["1.5rem",    { lineHeight: "2rem" }],
       },
       colors: {
-        // ── Brand: Zoom-style deep navy → blue ──────────────────
+        // ── Brand: #254395 (referensi) ───────────────────────────
         brand: {
+          DEFAULT: "#254395",
+          light:   "#3354B4",
+          dark:    "#1B3171",
           50:  "#eff6ff",
           100: "#dbeafe",
           200: "#bfdbfe",
@@ -27,29 +30,51 @@ const config: Config = {
           400: "#60a5fa",
           500: "#3b82f6",
           600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e3a8a",   // navy utama — mirip Zoom dark bg
-          900: "#172554",   // navy gelap untuk sidebar
-          950: "#0f172a",   // paling gelap
+          700: "#254395",
+          800: "#1B3171",
+          900: "#11244C",
+          950: "#0B1120",
         },
-        // ── Status colors — lebih soft, tidak mencolok ───────────
+        // ── Accent colors persis dari referensi ──────────────────
+        accent: {
+          green: {
+            light:   "#EAF8ED",
+            DEFAULT: "#22A346",
+            text:    "#177A31",
+          },
+          red: {
+            light:   "#FCECEC",
+            DEFAULT: "#E33333",
+            text:    "#A61A1A",
+          },
+          gray: {
+            light:   "#F4F5F7",
+            DEFAULT: "#6B7280",
+            text:    "#374151",
+          },
+          blue: {
+            light:   "#EBF2FF",
+            DEFAULT: "#2563EB",
+          },
+        },
+        // ── Status (tetap ada untuk komponen lain) ───────────────
         success: {
-          50:  "#f0fdf4",
-          100: "#dcfce7",
+          50:  "#EAF8ED",
+          100: "#EAF8ED",
           200: "#bbf7d0",
           400: "#4ade80",
-          500: "#22c55e",
-          600: "#16a34a",
-          700: "#15803d",
+          500: "#22A346",
+          600: "#22A346",
+          700: "#177A31",
         },
         danger: {
-          50:  "#fff1f2",
-          100: "#ffe4e6",
+          50:  "#FCECEC",
+          100: "#FCECEC",
           200: "#fecdd3",
           400: "#fb7185",
-          500: "#f43f5e",
-          600: "#e11d48",
-          700: "#be123c",
+          500: "#E33333",
+          600: "#E33333",
+          700: "#A61A1A",
         },
         warning: {
           50:  "#fffbeb",
@@ -65,8 +90,9 @@ const config: Config = {
         "3xl": "1.5rem",
       },
       boxShadow: {
-        card:      "0 1px 12px 0 rgba(30,58,138,0.07)",
-        "card-md": "0 4px 20px 0 rgba(30,58,138,0.10)",
+        card:      "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)",
+        "card-md": "0 8px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -5px rgba(0,0,0,0.04)",
+        "card-xl": "0 20px 40px -10px rgba(0,0,0,0.15)",
       },
       keyframes: {
         shake: {
