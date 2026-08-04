@@ -37,7 +37,7 @@ export default function LoginPage() {
         setShake(true);
         setTimeout(() => setShake(false), 500);
       } else {
-        router.replace("/dashboard");
+        router.replace("/pelanggan");
       }
     } catch {
       setError("Tidak bisa terhubung. Coba lagi.");

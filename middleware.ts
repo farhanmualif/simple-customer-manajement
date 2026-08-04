@@ -41,7 +41,7 @@ export async function middleware(req: NextRequest) {
   // Redirect root ke login atau dashboard
   if (pathname === "/") {
     return NextResponse.redirect(
-      new URL(isLoggedIn ? "/dashboard" : "/login", req.url)
+      new URL(isLoggedIn ? "/pelanggan" : "/login", req.url)
     );
   }
 
