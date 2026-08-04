@@ -54,20 +54,20 @@ function PeriodeNav({
   bulan: number; tahun: number; onChange: (b: number, t: number) => void;
 }) {
   return (
-    <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 px-1 py-1">
+    <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-1 py-1">
       <button
         onClick={() => { const p = geserBulan(bulan, tahun, -1); onChange(p.bulan, p.tahun); }}
-        className="p-2 text-gray-400 hover:text-gray-600 rounded transition-colors"
+        className="p-2 text-white/70 hover:text-white rounded transition-colors"
         aria-label="Bulan sebelumnya"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
-      <span className="px-3 font-medium text-gray-700 text-sm min-w-[120px] text-center select-none">
+      <span className="px-3 font-medium text-white text-sm min-w-[120px] text-center select-none">
         {formatBulanTahun(bulan, tahun)}
       </span>
       <button
         onClick={() => { const p = geserBulan(bulan, tahun, 1); onChange(p.bulan, p.tahun); }}
-        className="p-2 text-gray-400 hover:text-gray-600 rounded transition-colors"
+        className="p-2 text-white/70 hover:text-white rounded transition-colors"
         aria-label="Bulan berikutnya"
       >
         <ChevronRight className="w-4 h-4" />
@@ -138,6 +138,15 @@ function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
           </tbody>
         </table>
       </div>
+      {/* Lihat selengkapnya */}
+      <div className="mt-4 pt-3 border-t border-gray-100">
+        <button
+          onClick={() => router.push(`/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=belum_bayar`)}
+          className="w-full text-center text-sm font-semibold text-brand hover:underline py-1"
+        >
+          Lihat selengkapnya →
+        </button>
+      </div>
     </div>
   );
 }
@@ -206,6 +215,15 @@ function TabelSudahBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
           </tbody>
         </table>
       </div>
+      {/* Lihat selengkapnya */}
+      <div className="mt-4 pt-3 border-t border-gray-100">
+        <button
+          onClick={() => router.push(`/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=lunas`)}
+          className="w-full text-center text-sm font-semibold text-brand hover:underline py-1"
+        >
+          Lihat selengkapnya →
+        </button>
+      </div>
     </div>
   );
 }
@@ -259,7 +277,7 @@ function DashboardContent() {
       <button
         onClick={() => fetchData(periode.bulan, periode.tahun)}
         disabled={loading}
-        className="p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
+        className="p-2.5 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors disabled:opacity-50"
         aria-label="Perbarui"
       >
         <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />

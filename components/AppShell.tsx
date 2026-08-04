@@ -161,12 +161,15 @@ export function AppShell({
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <header className="bg-white/95 backdrop-blur-md border-b border-white/20 shadow-sm px-4 lg:px-8 py-4 lg:py-5 flex items-center gap-3 sticky top-0 z-30">
+        {/* Header — warna sama dengan sidebar: navy dark gradient */}
+        <header
+          className="px-4 lg:px-8 py-4 lg:py-5 flex items-center gap-3 sticky top-0 z-30 shadow-sm"
+          style={{ background: "linear-gradient(135deg, #0B1120 0%, #11244C 60%, #1a3a7a 100%)" }}
+        >
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setDrawerOpen(true)}
-            className="lg:hidden w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-gray-600 active:bg-gray-200 transition-colors"
+            className="lg:hidden w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0 text-white active:bg-white/20 transition-colors"
             aria-label="Buka menu"
           >
             <Menu className="w-5 h-5" />
@@ -174,9 +177,9 @@ export function AppShell({
 
           {/* Page title */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">{pageTitle}</h2>
+            <h2 className="text-xl lg:text-2xl font-bold text-white truncate">{pageTitle}</h2>
             {pageSubtitle && (
-              <p className="text-sm text-gray-500 mt-0.5 truncate">{pageSubtitle}</p>
+              <p className="text-sm text-blue-200 mt-0.5 truncate">{pageSubtitle}</p>
             )}
           </div>
 
@@ -189,7 +192,7 @@ export function AppShell({
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="hidden lg:flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors disabled:opacity-50"
+            className="hidden lg:flex items-center gap-2 px-4 py-2.5 text-blue-200 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
           >
             <LogOut className="w-5 h-5" />
             <span>Keluar</span>
