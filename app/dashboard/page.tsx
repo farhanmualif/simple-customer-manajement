@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   TrendingUp, CheckCircle2, Clock, Users, RefreshCw,
-  ChevronLeft, ChevronRight, WifiOff, LogOut,
+  ChevronLeft, ChevronRight, WifiOff,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import {
@@ -13,9 +13,38 @@ import {
 } from "@/lib/utils";
 import type { DashboardData, PelangganListItem } from "@/lib/types";
 
-/* ── Skeleton ── */
+/* ── Skeleton Card ── */
 function SkeletonCard({ h = "h-32" }: { h?: string }) {
   return <div className={`rounded-xl bg-white/20 animate-pulse ${h}`} />;
+}
+
+/* ── Skeleton Tabel — shimmer transparan seperti SkeletonCard lainnya ── */
+function SkeletonTabel({ warna }: { warna: "merah" | "hijau" }) {
+  const line = warna === "merah" ? "bg-red-300/40" : "bg-green-300/40";
+
+  return (
+    <div className="rounded-xl bg-white/20 animate-pulse p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-5">
+        <div className={`h-5 ${line} rounded w-36`} />
+        <div className={`h-5 ${line} rounded w-16`} />
+      </div>
+      {/* Kolom header */}
+      <div className="flex gap-4 pb-3 mb-2 border-b border-white/10">
+        <div className={`h-3 ${line} rounded w-16`} />
+        <div className={`h-3 ${line} rounded w-16`} />
+        <div className={`h-3 ${line} rounded w-10 ml-auto`} />
+      </div>
+      {/* 5 baris */}
+      {[45, 38, 52, 42, 48].map((w, i) => (
+        <div key={i} className="flex items-center gap-4 py-3.5 border-b border-white/5 last:border-0">
+          <div className={`h-3.5 ${line} rounded`} style={{ width: `${w}%` }} />
+          <div className={`h-3.5 ${line} rounded w-20`} />
+          <div className={`h-3.5 ${line} rounded w-10 ml-auto`} />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 /* ── Periode Nav: sesuai referensi (bg-gray-50 border) ── */
@@ -48,11 +77,7 @@ function PeriodeNav({
 }
 
 /* ── Tabel Belum Bayar ── */
-function TabelBelumBayar({
-  bulan, tahun,
-}: {
-  bulan: number; tahun: number;
-}) {
+function TabelBelumBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +94,8 @@ function TabelBelumBayar({
     };
     fetch_();
   }, [bulan, tahun]);
+
+  if (loading) return <SkeletonTabel warna="merah" />;
 
   return (
     <div className="glass-card p-6">
@@ -88,43 +115,26 @@ function TabelBelumBayar({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="animate-pulse">
-                  <td className="py-3.5 pr-4">
-                    <div className="h-3.5 bg-accent-red-light rounded w-28" />
-                  </td>
-                  <td className="py-3.5 pr-4">
-                    <div className="h-3.5 bg-accent-red-light rounded w-20" />
-                  </td>
-                  <td className="py-3.5 text-right">
-                    <div className="h-3.5 bg-accent-red-light rounded w-10 ml-auto" />
-                  </td>
-                </tr>
-              ))
-              : list.length === 0
-                ? (
-                  <tr>
-                    <td colSpan={3} className="py-6 text-center text-gray-400 text-sm">
-                      Semua pelanggan sudah bayar 🎉
-                    </td>
-                  </tr>
-                )
-                : list.map((p) => (
-                  <tr key={p.id} className="text-sm hover:bg-accent-red-light/20 transition-colors">
-                    <td className="py-3 font-medium text-gray-700">{p.nama}</td>
-                    <td className="py-3 text-gray-600">{formatRupiah(p.paket.harga)}</td>
-                    <td className="py-3 text-right">
-                      <button
-                        onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
-                        className="text-brand font-medium hover:underline text-sm"
-                      >
-                        Detail
-                      </button>
-                    </td>
-                  </tr>
-                ))
-            }
+            {list.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="py-6 text-center text-gray-400 text-sm">
+                  Semua pelanggan sudah bayar 🎉
+                </td>
+              </tr>
+            ) : list.map((p) => (
+              <tr key={p.id} className="text-sm hover:bg-accent-red-light/20 transition-colors">
+                <td className="py-3 font-medium text-gray-700">{p.nama}</td>
+                <td className="py-3 text-gray-600">{formatRupiah(p.paket.harga)}</td>
+                <td className="py-3 text-right">
+                  <button
+                    onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
+                    className="text-brand font-medium hover:underline text-sm"
+                  >
+                    Detail
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -133,11 +143,7 @@ function TabelBelumBayar({
 }
 
 /* ── Tabel Sudah Bayar ── */
-function TabelSudahBayar({
-  bulan, tahun,
-}: {
-  bulan: number; tahun: number;
-}) {
+function TabelSudahBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,6 +160,8 @@ function TabelSudahBayar({
     };
     fetch_();
   }, [bulan, tahun]);
+
+  if (loading) return <SkeletonTabel warna="hijau" />;
 
   return (
     <div className="glass-card p-6">
@@ -173,45 +181,28 @@ function TabelSudahBayar({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="animate-pulse">
-                  <td className="py-3.5 pr-4">
-                    <div className="h-3.5 bg-accent-green-light rounded w-28" />
-                  </td>
-                  <td className="py-3.5 pr-4">
-                    <div className="h-3.5 bg-accent-green-light rounded w-14" />
-                  </td>
-                  <td className="py-3.5 text-right">
-                    <div className="h-3.5 bg-accent-green-light rounded w-10 ml-auto" />
-                  </td>
-                </tr>
-              ))
-              : list.length === 0
-                ? (
-                  <tr>
-                    <td colSpan={3} className="py-6 text-center text-gray-400 text-sm">
-                      Belum ada yang lunas bulan ini
-                    </td>
-                  </tr>
-                )
-                : list.map((p) => (
-                  <tr key={p.id} className="text-sm hover:bg-accent-green-light/30 transition-colors">
-                    <td className="py-3 font-medium text-gray-700">{p.nama}</td>
-                    <td className="py-3">
-                      <span className="text-accent-green font-medium">Lunas</span>
-                    </td>
-                    <td className="py-3 text-right">
-                      <button
-                        onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
-                        className="text-brand font-medium hover:underline text-sm"
-                      >
-                        Detail
-                      </button>
-                    </td>
-                  </tr>
-                ))
-            }
+            {list.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="py-6 text-center text-gray-400 text-sm">
+                  Belum ada yang lunas bulan ini
+                </td>
+              </tr>
+            ) : list.map((p) => (
+              <tr key={p.id} className="text-sm hover:bg-accent-green-light/30 transition-colors">
+                <td className="py-3 font-medium text-gray-700">{p.nama}</td>
+                <td className="py-3">
+                  <span className="text-accent-green font-medium">Lunas</span>
+                </td>
+                <td className="py-3 text-right">
+                  <button
+                    onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
+                    className="text-brand font-medium hover:underline text-sm"
+                  >
+                    Detail
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
