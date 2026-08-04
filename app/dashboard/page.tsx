@@ -77,7 +77,7 @@ function PeriodeNav({
 }
 
 /* ── Tabel Belum Bayar ── */
-function TabelBelumBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
+function TabelBelumBayar({ bulan, tahun, refreshKey }: { bulan: number; tahun: number; refreshKey: number }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +93,7 @@ function TabelBelumBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
       finally { setLoading(false); }
     };
     fetch_();
-  }, [bulan, tahun]);
+  }, [bulan, tahun, refreshKey]);
 
   if (loading) return <SkeletonTabel warna="merah" />;
 
@@ -143,7 +143,7 @@ function TabelBelumBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
 }
 
 /* ── Tabel Sudah Bayar ── */
-function TabelSudahBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
+function TabelSudahBayar({ bulan, tahun, refreshKey }: { bulan: number; tahun: number; refreshKey: number }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,7 +159,7 @@ function TabelSudahBayar({ bulan, tahun }: { bulan: number; tahun: number }) {
       finally { setLoading(false); }
     };
     fetch_();
-  }, [bulan, tahun]);
+  }, [bulan, tahun, refreshKey]);
 
   if (loading) return <SkeletonTabel warna="hijau" />;
 
@@ -222,6 +222,7 @@ function DashboardContent() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchData = useCallback(async (b: number, t: number) => {
     setLoading(true); setError("");
@@ -230,6 +231,7 @@ function DashboardContent() {
       if (!res.ok) throw new Error();
       const json = await res.json();
       setData(json.data);
+      setRefreshKey((k) => k + 1); // trigger re-fetch di kedua tabel
     } catch { setError("Gagal memuat data."); }
     finally { setLoading(false); }
   }, []);
@@ -457,8 +459,8 @@ function DashboardContent() {
 
         {/* ── Row 3: 2 tabel ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TabelBelumBayar bulan={periode.bulan} tahun={periode.tahun} />
-          <TabelSudahBayar bulan={periode.bulan} tahun={periode.tahun} />
+          <TabelBelumBayar bulan={periode.bulan} tahun={periode.tahun} refreshKey={refreshKey} />
+          <TabelSudahBayar bulan={periode.bulan} tahun={periode.tahun} refreshKey={refreshKey} />
         </div>
 
       </div>
