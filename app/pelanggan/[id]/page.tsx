@@ -335,17 +335,24 @@ function DetailContent({ id }: { id: string }) {
       pageSubtitle={formatBulanTahun(periode.bulan, periode.tahun)}
       headerRight={headerRight}
     >
-      {/* Mobile: sub-bar periode nav + badge status — di bawah header */}
-      <div className="lg:hidden bg-brand-700 px-3 pb-3 flex items-center justify-between gap-3">
-        {/* Periode nav di mobile */}
+      {/* Mobile: sub-bar periode nav + badge status */}
+      <div
+        className="lg:hidden px-3 py-2.5 flex items-center gap-2"
+        style={{ background: "linear-gradient(135deg, #0B1120 0%, #11244C 60%, #1a3a7a 100%)" }}
+      >
+        {/* Periode nav — compact */}
         {periodeNav}
-        {/* Badge + historis indicator */}
-        <div className="flex items-center gap-2 shrink-0">
-          {data && <Badge variant={statusVariant(currentStatus)}>{statusLabel(currentStatus)}</Badge>}
-          {!isSekarang && (
-            <span className="text-xs text-brand-200">📅</span>
-          )}
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
+        {/* Badge status */}
+        {data && (
+          <Badge variant={statusVariant(currentStatus)} className="shrink-0 whitespace-nowrap">
+            {statusLabel(currentStatus)}
+          </Badge>
+        )}
+        {!isSekarang && (
+          <span className="text-xs text-blue-300 shrink-0">📅</span>
+        )}
       </div>
 
       <div className="p-4 lg:p-8 pb-8">
