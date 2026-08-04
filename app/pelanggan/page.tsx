@@ -182,7 +182,7 @@ function PelangganListContent() {
         page: String(targetPage),
         limit: String(LIMIT),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(tanggalBayar    ? { tanggalBayar }            : {}),
+        ...(tanggalBayar ? { tanggalBayar } : {}),
       });
       const res = await fetch(`/api/pelanggan?${p}`);
       if (!res.ok) throw new Error();
@@ -285,40 +285,29 @@ function PelangganListContent() {
             </div>
           </div>
 
-          {/* Filter tanggal bayar */}
+          {/* Filter tanggal bayar — date picker */}
           <div className="px-3 pb-2">
-            <div className="relative flex items-center gap-2">
-              <div className="relative flex-1">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={31}
-                  placeholder="Filter tanggal bayar (1–31)..."
-                  value={tanggalBayar}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    // Hanya izinkan 1-31
-                    if (val === "" || (parseInt(val) >= 1 && parseInt(val) <= 31)) {
-                      setTanggalBayar(val);
-                    }
-                  }}
-                  className="w-full h-11 bg-white rounded-xl border border-slate-200 pl-10 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow"
-                />
-                {tanggalBayar && (
-                  <button
-                    onClick={() => setTanggalBayar("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    <X className="w-4 h-4 text-slate-400" />
-                  </button>
-                )}
-              </div>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                type="date"
+                value={tanggalBayar}
+                onChange={(e) => setTanggalBayar(e.target.value)}
+                className="w-full h-11 bg-white rounded-xl border border-slate-200 pl-10 pr-10 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
+              />
+              {tanggalBayar && (
+                <button
+                  onClick={() => setTanggalBayar("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  aria-label="Hapus filter tanggal"
+                >
+                  <X className="w-4 h-4 text-slate-400" />
+                </button>
+              )}
             </div>
             {tanggalBayar && (
               <p className="text-xs text-brand-600 font-medium mt-1 px-1">
-                Menampilkan pelanggan yang bayar tanggal {tanggalBayar}
+                Menampilkan pelanggan yang bayar tanggal {new Date(tanggalBayar).getDate()} {new Date(tanggalBayar).toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
               </p>
             )}
           </div>

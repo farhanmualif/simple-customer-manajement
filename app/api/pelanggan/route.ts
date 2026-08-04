@@ -59,7 +59,14 @@ export async function GET(req: NextRequest) {
 
       // Filter tanggal bayar — cari pelanggan yang bayar pada tanggal tertentu
       if (needsTanggalFilter) {
-        const tgl = parseInt(tanggalBayar!, 10);
+        // tanggalBayar bisa berupa "YYYY-MM-DD" (dari date picker) atau angka "1"-"31"
+        let tgl: number;
+        if (tanggalBayar!.includes("-")) {
+          // Format YYYY-MM-DD — ambil hari saja
+          tgl = new Date(tanggalBayar!).getDate();
+        } else {
+          tgl = parseInt(tanggalBayar!, 10);
+        }
         mapped = mapped.filter((p) => {
           if (!p.tanggalBayarBulanIni) return false;
           const d = new Date(p.tanggalBayarBulanIni);
