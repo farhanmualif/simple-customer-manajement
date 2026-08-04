@@ -200,7 +200,7 @@ export function AppShell({
         </header>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto content-area">
           {children}
         </main>
       </div>

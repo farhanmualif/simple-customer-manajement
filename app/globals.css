@@ -26,9 +26,9 @@
     .text-xl   { font-size: 1.25rem;  line-height: 1.75rem; }
   }
 
-  /* Body: dark navy gradient background persis referensi */
+  /* Body: dark navy gradient background */
   body {
-    background: linear-gradient(135deg, #0B1120 0%, #11244C 50%, #1D4ED8 100%);
+    background: linear-gradient(135deg, #0d1628 0%, #162040 50%, #1a3578 100%);
     background-attachment: fixed;
     @apply text-gray-800 antialiased;
     min-height: 100dvh;
@@ -45,10 +45,13 @@
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
   .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
 
-  /* ── Glassmorphism card — putih transparan seperti referensi ── */
+  /* ── Glassmorphism card — sedikit transparan agar menyatu dengan bg ── */
   .glass-card {
-    @apply bg-white/95 backdrop-blur-md rounded-xl border border-white/20;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    @apply rounded-xl border border-white/30;
+    box-shadow: 0 4px 16px -2px rgba(11,17,32,0.18), 0 1px 4px -1px rgba(11,17,32,0.10);
   }
 
   /* ── Balance card: brand gradient persis referensi ── */
@@ -69,6 +72,12 @@
   .sidebar-width {
     width: 260px;
     min-width: 260px;
+  }
+
+  /* ── Overlay di area konten — mengurangi kontras background vs card ── */
+  .content-area {
+    background: rgba(255, 255, 255, 0.04);
+    min-height: 100%;
   }
 
   .skeleton {
