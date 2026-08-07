@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { parsePeriodeQuery } from "@/lib/utils";
 
-// GET /api/pelanggan?bulan=8&tahun=2026&search=&filter=semua&page=1&limit=20&tanggalBayar=5
+// GET /api/pelanggan?bulan=8&tahun=2026&search=&filter=semua&page=1&limit=20&tanggalBayar=YYYY-MM-DD&jatuhTempo=10
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -20,14 +20,16 @@ export async function GET(req: NextRequest) {
     const filter       = searchParams.get("filter") ?? "semua";
     const page         = Math.max(1, parseInt(searchParams.get("page")  ?? "1",  10));
     const limit        = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
-    const tanggalBayar = searchParams.get("tanggalBayar"); // "1"-"31" atau null
+    const tanggalBayar = searchParams.get("tanggalBayar"); // YYYY-MM-DD atau null
+    const jatuhTempo   = searchParams.get("jatuhTempo");   // "1"-"28" atau null
 
+    // jatuhTempo bisa langsung di DB-level WHERE (field tanggalJatuhTempo)
     const where = {
       aktif: true,
-      ...(search ? { nama: { contains: search, mode: "insensitive" as const } } : {}),
+      ...(search      ? { nama: { contains: search, mode: "insensitive" as const } } : {}),
+      ...(jatuhTempo  ? { tanggalJatuhTempo: parseInt(jatuhTempo, 10) } : {}),
     };
 
-    // Filter tanggal bayar: harus join tagihan, filter di memory
     const needsStatusFilter  = filter !== "semua";
     const needsTanggalFilter = tanggalBayar !== null && tanggalBayar !== "";
     const needsMemoryFilter  = needsStatusFilter || needsTanggalFilter;
