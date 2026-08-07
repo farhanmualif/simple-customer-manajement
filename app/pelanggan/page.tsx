@@ -219,32 +219,23 @@ function PelangganListContent() {
       pageSubtitle={formatBulanTahun(periode.bulan, periode.tahun)}
       headerRight={headerRight}
     >
-      {/* Desktop: 2 kolom (filter kiri | list kanan). Mobile: 1 kolom */}
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-73px)]">
+      <div className="flex flex-col h-full min-h-[calc(100vh-73px)]">
 
-        {/* ── Kolom Kiri: Panel Filter (desktop fixed width) ── */}
-        <div className="w-full lg:w-80 lg:shrink-0 lg:border-r lg:border-white/10 lg:h-[calc(100vh-73px)] lg:overflow-y-auto scrollbar-none px-3 pt-3 pb-3 space-y-2">
-
-          {/* Mobile: periode chip */}
-          <div className="lg:hidden flex items-center justify-between">
-            <PeriodeChip bulan={periode.bulan} tahun={periode.tahun} onChange={handlePeriodeChange} />
-            {!isSekarang && (
-              <button onClick={() => handlePeriodeChange(now.bulan, now.tahun)} className="text-xs text-white/80 font-semibold underline">
-                Bulan ini
-              </button>
-            )}
-          </div>
-
-          {/* Desktop: banner bulan lampau */}
+        {/* ── Mobile: periode chip ── */}
+        <div className="lg:hidden flex items-center justify-between px-3 pt-3 pb-1">
+          <PeriodeChip bulan={periode.bulan} tahun={periode.tahun} onChange={handlePeriodeChange} />
           {!isSekarang && (
-            <div className="hidden lg:flex bg-warning-50 border border-warning-200 rounded-xl px-3 py-2 items-center justify-between text-xs">
-              <span className="text-warning-700 font-semibold">📅 Data {formatBulanTahun(periode.bulan, periode.tahun)}</span>
-              <button onClick={() => handlePeriodeChange(now.bulan, now.tahun)} className="text-warning-700 underline font-semibold ml-2">Bulan ini</button>
-            </div>
+            <button onClick={() => handlePeriodeChange(now.bulan, now.tahun)} className="text-xs text-white/80 font-semibold underline">
+              Bulan ini
+            </button>
           )}
+        </div>
+
+        {/* ── Filter bar — 1 baris horizontal di desktop, kolom di mobile ── */}
+        <div className="px-3 pt-3 pb-2 space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-3 lg:pt-4 lg:pb-3 lg:border-b lg:border-white/10">
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative lg:flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="search"
@@ -262,105 +253,94 @@ function PelangganListContent() {
           </div>
 
           {/* Filter tanggal bayar */}
-          <div className="relative">
+          <div className="relative lg:w-52">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
             <input
               type="date"
               value={tanggalBayar}
               onChange={(e) => setTanggalBayar(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-10 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
+              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-8 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
               style={{ background: "rgba(255,255,255,0.9)" }}
             />
             {!tanggalBayar && (
               <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">
-                Filter tanggal bayar...
+                Tgl bayar...
               </span>
             )}
             {tanggalBayar && (
-              <button onClick={() => setTanggalBayar("")} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
+              <button onClick={() => setTanggalBayar("")} className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
                 <X className="w-4 h-4 text-slate-400" />
               </button>
             )}
           </div>
 
           {/* Filter jatuh tempo */}
-          <div className="relative">
+          <div className="relative lg:w-52">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <select
               value={jatuhTempo}
               onChange={(e) => setJatuhTempo(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
+              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
               style={{ background: "rgba(255,255,255,0.9)", color: jatuhTempo ? "#1e293b" : "#94a3b8" }}
             >
-              <option value="">Filter jatuh tempo...</option>
+              <option value="">Jatuh tempo...</option>
               {Array.from({ length: 28 }, (_, i) => i + 1).map((tgl) => (
-                <option key={tgl} value={String(tgl)} style={{ color: "#1e293b" }}>Tanggal {tgl} tiap bulan</option>
+                <option key={tgl} value={String(tgl)} style={{ color: "#1e293b" }}>Tgl {tgl}</option>
               ))}
             </select>
             {jatuhTempo && (
-              <button onClick={() => setJatuhTempo("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <button onClick={() => setJatuhTempo("")} className="absolute right-2 top-1/2 -translate-y-1/2">
                 <X className="w-4 h-4 text-slate-400" />
               </button>
             )}
           </div>
+        </div>
 
-          {/* Status chips */}
-          <div className="flex flex-wrap gap-2">
-            {FILTER_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setFilter(opt.value)}
-                className={`h-9 px-3 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                  filter === opt.value ? "bg-brand-600 text-white shadow-sm" : "text-slate-700 border border-white/30 hover:bg-white/60"
-                }`}
-                style={filter !== opt.value ? { background: "rgba(255,255,255,0.75)" } : {}}
-              >
-                {opt.icon} {opt.label}
-              </button>
-            ))}
-          </div>
+        {/* ── Status chips + info ── */}
+        <div className="px-3 pb-2 flex items-center gap-2 flex-wrap">
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFilter(opt.value)}
+              className={`h-9 px-3 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                filter === opt.value ? "bg-brand-600 text-white shadow-sm" : "text-slate-700 border border-white/30 hover:bg-white/60"
+              }`}
+              style={filter !== opt.value ? { background: "rgba(255,255,255,0.75)" } : {}}
+            >
+              {opt.icon} {opt.label}
+            </button>
+          ))}
 
           {/* Badge filter aktif */}
-          {(tanggalBayar || jatuhTempo) && (
-            <div className="flex flex-wrap gap-2">
-              {tanggalBayar && (
-                <span className="inline-flex items-center gap-1.5 text-xs bg-brand-600 text-white font-medium px-3 py-1.5 rounded-full">
-                  <Calendar className="w-3 h-3" />
-                  Bayar: {new Date(tanggalBayar).getDate()} {new Date(tanggalBayar).toLocaleDateString("id-ID", { month: "short" })}
-                  <button onClick={() => setTanggalBayar("")} className="ml-1"><X className="w-3 h-3" /></button>
-                </span>
-              )}
-              {jatuhTempo && (
-                <span className="inline-flex items-center gap-1.5 text-xs bg-brand-600 text-white font-medium px-3 py-1.5 rounded-full">
-                  <Filter className="w-3 h-3" />
-                  Jatuh tempo: tgl {jatuhTempo}
-                  <button onClick={() => setJatuhTempo("")} className="ml-1"><X className="w-3 h-3" /></button>
-                </span>
-              )}
-              <button
-                onClick={() => { setTanggalBayar(""); setJatuhTempo(""); setFilter("semua"); }}
-                className="text-xs text-white/70 underline self-center"
-              >
-                Hapus semua
-              </button>
-            </div>
+          {tanggalBayar && (
+            <span className="inline-flex items-center gap-1 text-xs bg-brand-600 text-white font-medium px-2.5 py-1.5 rounded-full">
+              <Calendar className="w-3 h-3" />
+              {new Date(tanggalBayar).getDate()} {new Date(tanggalBayar).toLocaleDateString("id-ID", { month: "short" })}
+              <button onClick={() => setTanggalBayar("")} className="ml-0.5"><X className="w-3 h-3" /></button>
+            </span>
+          )}
+          {jatuhTempo && (
+            <span className="inline-flex items-center gap-1 text-xs bg-brand-600 text-white font-medium px-2.5 py-1.5 rounded-full">
+              <Filter className="w-3 h-3" />
+              Jatuh tgl {jatuhTempo}
+              <button onClick={() => setJatuhTempo("")} className="ml-0.5"><X className="w-3 h-3" /></button>
+            </span>
           )}
 
           {/* Jumlah hasil */}
           {!loading && (
-            <p className="text-xs text-white/70 font-medium px-1">
+            <span className="text-xs text-white/70 font-medium ml-auto">
               {pagination.total} pelanggan
-              {filter !== "semua" && ` · ${FILTER_OPTIONS.find(o => o.value === filter)?.label}`}
               {pagination.totalPages > 1 && ` · hal. ${page}/${pagination.totalPages}`}
-            </p>
+            </span>
           )}
         </div>
 
-        {/* ── Kolom Kanan: List Pelanggan ── */}
-        <div className="flex-1 overflow-y-auto px-3 pb-24 lg:pb-4 scrollbar-none lg:h-[calc(100vh-73px)]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 py-2">
+        {/* ── Grid card pelanggan ── */}
+        <div className="flex-1 overflow-y-auto px-3 pb-24 lg:pb-6 scrollbar-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 py-1">
             {loading
-              ? Array.from({ length: 7 }).map((_, i) => <SkeletonCard key={i} />)
+              ? Array.from({ length: 9 }).map((_, i) => <SkeletonCard key={i} />)
               : list.length === 0
                 ? (
                   <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
@@ -391,7 +371,7 @@ function PelangganListContent() {
           </div>
 
           {error && (
-            <div className="bg-danger-50 border border-danger-200 rounded-xl p-3 text-danger-700 text-sm text-center mx-1">
+            <div className="bg-danger-50 border border-danger-200 rounded-xl p-3 text-danger-700 text-sm text-center mx-1 mb-2">
               {error}
               <button onClick={() => fetchList(page)} className="ml-2 underline font-medium">Coba lagi</button>
             </div>
@@ -436,7 +416,6 @@ function PelangganListContent() {
     </AppShell>
   );
 }
-
 export default function PelangganPage() {
   return (
     <Suspense fallback={
