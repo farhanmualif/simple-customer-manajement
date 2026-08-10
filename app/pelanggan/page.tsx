@@ -68,46 +68,94 @@ function PeriodeChip({ bulan, tahun, onChange }: {
   );
 }
 
+// ── Helpers warna per status ──────────────────────────────────────────────────
+function statusCardStyle(s: StatusTagihan): {
+  cardBg: string;
+  border: string;
+  strip: string;
+  avatarBg: string;
+  avatarText: string;
+} {
+  if (s === "LUNAS") return {
+    cardBg:     "rgba(34, 163, 70, 0.15)",
+    border:     "rgba(34, 163, 70, 0.30)",
+    strip:      "#22A346",
+    avatarBg:   "rgba(34, 163, 70, 0.25)",
+    avatarText: "#6ee89b",
+  };
+  if (s === "BELUM_BAYAR") return {
+    cardBg:     "rgba(227, 51, 51, 0.15)",
+    border:     "rgba(227, 51, 51, 0.30)",
+    strip:      "#E33333",
+    avatarBg:   "rgba(227, 51, 51, 0.25)",
+    avatarText: "#f88",
+  };
+  // ISOLIR
+  return {
+    cardBg:     "rgba(107, 114, 128, 0.15)",
+    border:     "rgba(107, 114, 128, 0.30)",
+    strip:      "#6B7280",
+    avatarBg:   "rgba(107, 114, 128, 0.25)",
+    avatarText: "#cbd5e1",
+  };
+}
+
 // ── Card Pelanggan ────────────────────────────────────────────────────────────
 function PelangganCard({ pelanggan, onClick }: {
   pelanggan: PelangganListItem; onClick: () => void;
 }) {
+  const cs = statusCardStyle(pelanggan.statusBulanIni);
+
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-2xl p-4 flex items-start gap-3 transition-all text-left active:scale-[0.98]"
-      style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(8px)" }}
+      className="w-full rounded-2xl overflow-hidden flex items-stretch transition-all text-left active:scale-[0.98]"
+      style={{
+        background:    cs.cardBg,
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border:        `1px solid ${cs.border}`,
+        boxShadow:     "0 4px 16px -2px rgba(0,0,0,0.25)",
+      }}
     >
-      {pelanggan.nomorUrut && (
-        <span className="text-xs font-bold text-slate-400 w-7 shrink-0 pt-0.5 text-right">
-          {pelanggan.nomorUrut}.
-        </span>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 justify-between">
-          <p className="font-semibold truncate text-sm text-slate-800">{pelanggan.nama}</p>
-          <Badge variant={statusVariant(pelanggan.statusBulanIni)} className="shrink-0 text-xs">
-            {statusLabel(pelanggan.statusBulanIni)}
-          </Badge>
+      {/* strip warna kiri */}
+      <div className="w-1 shrink-0" style={{ background: cs.strip }} />
+
+      <div className="flex items-start gap-3 p-4 flex-1 min-w-0">
+        {/* avatar inisial */}
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
+          style={{ background: cs.avatarBg, color: cs.avatarText }}
+        >
+          {pelanggan.nama.charAt(0).toUpperCase()}
         </div>
-        {pelanggan.alamat && (
-          <p className="text-xs text-slate-500 mt-0.5 truncate">{pelanggan.alamat}</p>
-        )}
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="flex items-center gap-1 text-xs text-slate-400">
-            <Wifi className="w-3 h-3" />
-            {pelanggan.paket.namaPaket} · {formatRupiah(pelanggan.paket.harga)}
-          </span>
-          {pelanggan.tanggalJatuhTempo && (
-            <span className="text-xs text-slate-400 border-l border-slate-200 pl-2">
-              Jatuh tempo tgl {pelanggan.tanggalJatuhTempo}
-            </span>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 justify-between">
+            <p className="font-semibold truncate text-sm text-white">{pelanggan.nama}</p>
+            <Badge variant={statusVariant(pelanggan.statusBulanIni)} className="shrink-0 text-xs">
+              {statusLabel(pelanggan.statusBulanIni)}
+            </Badge>
+          </div>
+          {pelanggan.alamat && (
+            <p className="text-xs text-blue-100/80 mt-0.5 truncate">{pelanggan.alamat}</p>
           )}
-          {pelanggan.statusBulanIni === "LUNAS" && pelanggan.nominalBayarBulanIni !== null && (
-            <span className="text-xs font-semibold text-success-600 ml-auto">
-              Bayar: {formatRupiah(pelanggan.nominalBayarBulanIni)}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-blue-100/75">
+              <Wifi className="w-3 h-3" />
+              {pelanggan.paket.namaPaket} · {formatRupiah(pelanggan.paket.harga)}
             </span>
-          )}
+            {pelanggan.tanggalJatuhTempo && (
+              <span className="text-xs text-blue-100/75 border-l border-white/15 pl-2">
+                Jatuh tempo tgl {pelanggan.tanggalJatuhTempo}
+              </span>
+            )}
+            {pelanggan.statusBulanIni === "LUNAS" && pelanggan.nominalBayarBulanIni !== null && (
+              <span className="text-xs font-semibold ml-auto" style={{ color: "#6ee89b" }}>
+                Bayar: {formatRupiah(pelanggan.nominalBayarBulanIni)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </button>
@@ -116,15 +164,25 @@ function PelangganCard({ pelanggan, onClick }: {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl p-4 flex gap-3 animate-pulse" style={{ background: "rgba(255,255,255,0.25)" }}>
-      <div className="w-7 h-4 bg-white/40 rounded shrink-0 mt-1" />
-      <div className="flex-1 space-y-2">
-        <div className="flex justify-between gap-2">
-          <div className="h-4 bg-white/40 rounded w-36" />
-          <div className="h-5 bg-white/40 rounded-full w-20" />
+    <div
+      className="rounded-2xl overflow-hidden flex items-stretch animate-pulse"
+      style={{
+        background:    "rgba(255,255,255,0.07)",
+        border:        "1px solid rgba(255,255,255,0.10)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div className="w-1 shrink-0 bg-white/20" />
+      <div className="flex items-start gap-3 p-4 flex-1">
+        <div className="w-9 h-9 bg-white/15 rounded-xl shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="flex justify-between gap-2">
+            <div className="h-4 bg-white/15 rounded w-36" />
+            <div className="h-5 bg-white/15 rounded-full w-20" />
+          </div>
+          <div className="h-3 bg-white/10 rounded w-24" />
+          <div className="h-3 bg-white/10 rounded w-40" />
         </div>
-        <div className="h-3 bg-white/30 rounded w-24" />
-        <div className="h-3 bg-white/30 rounded w-40" />
       </div>
     </div>
   );
@@ -236,61 +294,66 @@ function PelangganListContent() {
 
           {/* Search */}
           <div className="relative lg:flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none" />
             <input
               type="search"
               placeholder="Cari nama pelanggan..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow"
-              style={{ background: "rgba(255,255,255,0.9)" }}
+              className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-10 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+              style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)" }}
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-slate-400" />
+                <X className="w-4 h-4 text-blue-200/50" />
               </button>
             )}
           </div>
 
           {/* Filter tanggal bayar */}
           <div className="relative lg:w-52">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none z-10" />
             <input
               type="date"
               value={tanggalBayar}
               onChange={(e) => setTanggalBayar(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-8 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
-              style={{ background: "rgba(255,255,255,0.9)" }}
+              className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow appearance-none"
+              style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)", colorScheme: "dark" }}
             />
             {!tanggalBayar && (
-              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">
+              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-blue-200/40 pointer-events-none">
                 Tgl bayar...
               </span>
             )}
             {tanggalBayar && (
               <button onClick={() => setTanggalBayar("")} className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
-                <X className="w-4 h-4 text-slate-400" />
+                <X className="w-4 h-4 text-blue-200/50" />
               </button>
             )}
           </div>
 
           {/* Filter jatuh tempo */}
           <div className="relative lg:w-52">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none" />
             <select
               value={jatuhTempo}
               onChange={(e) => setJatuhTempo(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/30 pl-10 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 transition-shadow appearance-none"
-              style={{ background: "rgba(255,255,255,0.9)", color: jatuhTempo ? "#1e293b" : "#94a3b8" }}
+              className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow appearance-none"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                backdropFilter: "blur(8px)",
+                color: jatuhTempo ? "#ffffff" : "rgba(147,197,253,0.4)",
+                colorScheme: "dark",
+              }}
             >
               <option value="">Jatuh tempo...</option>
               {Array.from({ length: 28 }, (_, i) => i + 1).map((tgl) => (
-                <option key={tgl} value={String(tgl)} style={{ color: "#1e293b" }}>Tgl {tgl}</option>
+                <option key={tgl} value={String(tgl)} style={{ background: "#11244C", color: "#ffffff" }}>Tgl {tgl}</option>
               ))}
             </select>
             {jatuhTempo && (
               <button onClick={() => setJatuhTempo("")} className="absolute right-2 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-slate-400" />
+                <X className="w-4 h-4 text-blue-200/50" />
               </button>
             )}
           </div>
@@ -302,10 +365,12 @@ function PelangganListContent() {
             <button
               key={opt.value}
               onClick={() => setFilter(opt.value)}
-              className={`h-9 px-3 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                filter === opt.value ? "bg-brand-600 text-white shadow-sm" : "text-slate-700 border border-white/30 hover:bg-white/60"
+              className={`h-9 px-3 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                filter === opt.value
+                  ? "bg-brand-600 text-white shadow-sm ring-1 ring-brand-400/40"
+                  : "text-blue-200/70 border border-white/15 hover:bg-white/10 hover:text-white"
               }`}
-              style={filter !== opt.value ? { background: "rgba(255,255,255,0.75)" } : {}}
+              style={filter !== opt.value ? { background: "rgba(255,255,255,0.07)" } : {}}
             >
               {opt.icon} {opt.label}
             </button>
@@ -329,7 +394,7 @@ function PelangganListContent() {
 
           {/* Jumlah hasil */}
           {!loading && (
-            <span className="text-xs text-white/70 font-medium ml-auto">
+            <span className="text-xs text-blue-200/60 font-medium ml-auto">
               {pagination.total} pelanggan
               {pagination.totalPages > 1 && ` · hal. ${page}/${pagination.totalPages}`}
             </span>
@@ -379,22 +444,29 @@ function PelangganListContent() {
 
           {!loading && pagination.totalPages > 1 && (
             <div className="px-1 pt-2 pb-2">
-              <div className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: "rgba(255,255,255,0.82)" }}>
+              <div
+                className="flex items-center justify-between rounded-2xl px-4 py-3"
+                style={{
+                  background: "rgba(255,255,255,0.07)",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                }}
+              >
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-blue-200 hover:bg-white/10 hover:text-white disabled:opacity-25 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
                 <div className="text-center">
-                  <p className="text-sm font-bold text-slate-700">{page} / {pagination.totalPages}</p>
-                  <p className="text-xs text-slate-400">{pagination.total} pelanggan</p>
+                  <p className="text-sm font-bold text-white">{page} / {pagination.totalPages}</p>
+                  <p className="text-xs text-blue-200/50">{pagination.total} pelanggan</p>
                 </div>
                 <button
                   onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                   disabled={page >= pagination.totalPages}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-blue-200 hover:bg-white/10 hover:text-white disabled:opacity-25 transition-all"
                 >
                   Next <ChevronRight className="w-4 h-4" />
                 </button>

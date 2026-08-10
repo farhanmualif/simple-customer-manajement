@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   TrendingUp, CheckCircle2, Clock, Users, RefreshCw,
@@ -13,29 +13,39 @@ import {
 } from "@/lib/utils";
 import type { DashboardData, PelangganListItem } from "@/lib/types";
 
+/* ── Shared style ── */
+const glassCard: React.CSSProperties = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: "1rem",
+};
+
 /* ── Skeleton Card ── */
 function SkeletonCard({ h = "h-32" }: { h?: string }) {
-  return <div className={`rounded-xl bg-white/20 animate-pulse ${h}`} />;
+  return (
+    <div
+      className={`rounded-2xl animate-pulse ${h}`}
+      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.10)" }}
+    />
+  );
 }
 
-/* ── Skeleton Tabel — shimmer transparan seperti SkeletonCard lainnya ── */
+/* ── Skeleton Tabel ── */
 function SkeletonTabel({ warna }: { warna: "merah" | "hijau" }) {
-  const line = warna === "merah" ? "bg-red-300/40" : "bg-green-300/40";
-
+  const line = warna === "merah" ? "bg-red-400/20" : "bg-green-400/20";
   return (
-    <div className="rounded-xl bg-white/20 animate-pulse p-6">
-      {/* Header */}
+    <div className="rounded-2xl animate-pulse p-6" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.10)" }}>
       <div className="flex justify-between items-center mb-5">
         <div className={`h-5 ${line} rounded w-36`} />
         <div className={`h-5 ${line} rounded w-16`} />
       </div>
-      {/* Kolom header */}
       <div className="flex gap-4 pb-3 mb-2 border-b border-white/10">
         <div className={`h-3 ${line} rounded w-16`} />
         <div className={`h-3 ${line} rounded w-16`} />
         <div className={`h-3 ${line} rounded w-10 ml-auto`} />
       </div>
-      {/* 5 baris */}
       {[45, 38, 52, 42, 48].map((w, i) => (
         <div key={i} className="flex items-center gap-4 py-3.5 border-b border-white/5 last:border-0">
           <div className={`h-3.5 ${line} rounded`} style={{ width: `${w}%` }} />
@@ -76,7 +86,7 @@ function PeriodeNav({
   );
 }
 
-/* ── Tabel Belum Bayar ── */
+/* ── Tabel Belum Bayar ≥ 3 Hari ── */
 function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: number; tahun: number; refreshKey: number; isLoading: boolean }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
@@ -86,7 +96,7 @@ function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
     const fetch_ = async () => {
       setFetching(true);
       try {
-        const res = await fetch(`/api/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=belum_bayar&limit=5&page=1`);
+        const res = await fetch(`/api/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=belum_bayar_3hari&limit=5&page=1`);
         const json = await res.json();
         setList(json.data ?? []);
       } catch { /* silent */ }
@@ -98,37 +108,53 @@ function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
   if (isLoading || fetching) return <SkeletonTabel warna="merah" />;
 
   return (
-    <div className="glass-card p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-gray-900">Daftar Belum Bayar</h3>
-        <span className="text-xs font-medium text-accent-red bg-accent-red-light px-2 py-1 rounded">
-          Terbaru
+    <div className="rounded-2xl overflow-hidden" style={glassCard}>
+      <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-white/10">
+        <div>
+          <h3 className="text-base font-bold text-white">Menunggak ≥ 3 Hari</h3>
+          <p className="text-xs text-blue-200/50 mt-0.5">Belum bayar sejak jatuh tempo</p>
+        </div>
+        <span
+          className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
+          style={{ background: "rgba(227,51,51,0.2)", color: "#f88" }}
+        >
+          {list.length} pelanggan
         </span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-              <th className="pb-3">Nama</th>
-              <th className="pb-3">Tagihan</th>
-              <th className="pb-3 text-right">Aksi</th>
+            <tr className="text-xs font-semibold text-blue-200/40 uppercase tracking-wider border-b border-white/8">
+              <th className="px-6 py-3">Nama</th>
+              <th className="px-6 py-3">Tagihan</th>
+              <th className="px-6 py-3">Jatuh Tempo</th>
+              <th className="px-6 py-3 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody>
             {list.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-6 text-center text-gray-400 text-sm">
-                  Semua pelanggan sudah bayar 🎉
+                <td colSpan={4} className="px-6 py-8 text-center text-blue-200/40 text-sm">
+                  Tidak ada yang menunggak ≥ 3 hari 🎉
                 </td>
               </tr>
             ) : list.map((p) => (
-              <tr key={p.id} className="text-sm hover:bg-accent-red-light/20 transition-colors">
-                <td className="py-3 font-medium text-gray-700">{p.nama}</td>
-                <td className="py-3 text-gray-600">{formatRupiah(p.paket.harga)}</td>
-                <td className="py-3 text-right">
+              <tr
+                key={p.id}
+                className="border-b border-white/5 last:border-0 transition-colors"
+                style={{ background: "transparent" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.08)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <td className="px-6 py-3 font-medium text-white text-sm">{p.nama}</td>
+                <td className="px-6 py-3 text-blue-100/70 text-sm">{formatRupiah(p.paket.harga)}</td>
+                <td className="px-6 py-3 text-sm">
+                  <span className="font-semibold" style={{ color: "#f88" }}>Tgl {p.tanggalJatuhTempo}</span>
+                </td>
+                <td className="px-6 py-3 text-right">
                   <button
                     onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
-                    className="text-brand font-medium hover:underline text-sm"
+                    className="text-sm font-semibold text-blue-300 hover:text-white transition-colors"
                   >
                     Detail
                   </button>
@@ -138,20 +164,19 @@ function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
           </tbody>
         </table>
       </div>
-      {/* Lihat selengkapnya */}
-      <div className="mt-4 pt-3 border-t border-gray-100">
+      <div className="px-6 py-3 border-t border-white/10">
         <button
           onClick={() => router.push(`/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=belum_bayar`)}
-          className="w-full text-center text-sm font-semibold text-brand hover:underline py-1"
+          className="w-full text-center text-sm font-semibold text-blue-300 hover:text-white transition-colors py-1"
         >
-          Lihat selengkapnya →
+          Lihat semua belum bayar →
         </button>
       </div>
     </div>
   );
 }
 
-/* ── Tabel Sudah Bayar ── */
+/* ── Tabel Bayar Hari Ini ── */
 function TabelSudahBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: number; tahun: number; refreshKey: number; isLoading: boolean }) {
   const router = useRouter();
   const [list, setList] = useState<PelangganListItem[]>([]);
@@ -161,7 +186,7 @@ function TabelSudahBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
     const fetch_ = async () => {
       setFetching(true);
       try {
-        const res = await fetch(`/api/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=lunas&limit=5&page=1`);
+        const res = await fetch(`/api/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=bayar_hari_ini&limit=5&page=1`);
         const json = await res.json();
         setList(json.data ?? []);
       } catch { /* silent */ }
@@ -173,55 +198,76 @@ function TabelSudahBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
   if (isLoading || fetching) return <SkeletonTabel warna="hijau" />;
 
   return (
-    <div className="glass-card p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-gray-900">Daftar Sudah Bayar</h3>
-        <span className="text-xs font-medium text-accent-green bg-accent-green-light px-2 py-1 rounded">
-          Terverifikasi
+    <div className="rounded-2xl overflow-hidden" style={glassCard}>
+      <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-white/10">
+        <div>
+          <h3 className="text-base font-bold text-white">Bayar Hari Ini</h3>
+          <p className="text-xs text-blue-200/50 mt-0.5">Pembayaran masuk hari ini</p>
+        </div>
+        <span
+          className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
+          style={{ background: "rgba(34,163,70,0.2)", color: "#6ee89b" }}
+        >
+          {list.length} pelanggan
         </span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-              <th className="pb-3">Nama</th>
-              <th className="pb-3">Status</th>
-              <th className="pb-3 text-right">Aksi</th>
+            <tr className="text-xs font-semibold text-blue-200/40 uppercase tracking-wider border-b border-white/8">
+              <th className="px-6 py-3">Nama</th>
+              <th className="px-6 py-3">Dibayar</th>
+              <th className="px-6 py-3">Jam</th>
+              <th className="px-6 py-3 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody>
             {list.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-6 text-center text-gray-400 text-sm">
-                  Belum ada yang lunas bulan ini
+                <td colSpan={4} className="px-6 py-8 text-center text-blue-200/40 text-sm">
+                  Belum ada pembayaran hari ini
                 </td>
               </tr>
-            ) : list.map((p) => (
-              <tr key={p.id} className="text-sm hover:bg-accent-green-light/30 transition-colors">
-                <td className="py-3 font-medium text-gray-700">{p.nama}</td>
-                <td className="py-3">
-                  <span className="text-accent-green font-medium">Lunas</span>
-                </td>
-                <td className="py-3 text-right">
-                  <button
-                    onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
-                    className="text-brand font-medium hover:underline text-sm"
-                  >
-                    Detail
-                  </button>
-                </td>
-              </tr>
-            ))}
+            ) : list.map((p) => {
+              // jam bayar dari tanggalBayarBulanIni (ISO string)
+              const jamBayar = p.tanggalBayarBulanIni
+                ? new Date(p.tanggalBayarBulanIni).toLocaleTimeString("id-ID", {
+                    hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta",
+                  })
+                : "—";
+              return (
+                <tr
+                  key={p.id}
+                  className="border-b border-white/5 last:border-0 transition-colors"
+                  style={{ background: "transparent" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(34,163,70,0.08)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <td className="px-6 py-3 font-medium text-white text-sm">{p.nama}</td>
+                  <td className="px-6 py-3 text-sm font-semibold" style={{ color: "#6ee89b" }}>
+                    {p.nominalBayarBulanIni !== null ? formatRupiah(p.nominalBayarBulanIni) : formatRupiah(p.paket.harga)}
+                  </td>
+                  <td className="px-6 py-3 text-sm text-blue-100/60">{jamBayar}</td>
+                  <td className="px-6 py-3 text-right">
+                    <button
+                      onClick={() => router.push(`/pelanggan/${p.id}?bulan=${bulan}&tahun=${tahun}`)}
+                      className="text-sm font-semibold text-blue-300 hover:text-white transition-colors"
+                    >
+                      Detail
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
-      {/* Lihat selengkapnya */}
-      <div className="mt-4 pt-3 border-t border-gray-100">
+      <div className="px-6 py-3 border-t border-white/10">
         <button
           onClick={() => router.push(`/pelanggan?bulan=${bulan}&tahun=${tahun}&filter=lunas`)}
-          className="w-full text-center text-sm font-semibold text-brand hover:underline py-1"
+          className="w-full text-center text-sm font-semibold text-blue-300 hover:text-white transition-colors py-1"
         >
-          Lihat selengkapnya →
+          Lihat semua yang lunas →
         </button>
       </div>
     </div>
@@ -312,13 +358,16 @@ function DashboardContent() {
 
         {/* Banner bulan lampau */}
         {!isSekarang && (
-          <div className="glass-card px-5 py-3 flex items-center justify-between">
-            <p className="text-sm font-semibold text-gray-700">
+          <div
+            className="px-5 py-3 rounded-2xl flex items-center justify-between"
+            style={glassCard}
+          >
+            <p className="text-sm font-semibold text-blue-100/80">
               📅 Melihat data historis — {formatBulanTahun(periode.bulan, periode.tahun)}
             </p>
             <button
               onClick={() => handlePeriodeChange(now.bulan, now.tahun)}
-              className="text-sm text-brand font-semibold hover:underline ml-4"
+              className="text-sm text-blue-300 font-semibold hover:text-white transition-colors ml-4 shrink-0"
             >
               Bulan ini
             </button>
@@ -327,129 +376,155 @@ function DashboardContent() {
 
         {/* Error */}
         {error && (
-          <div className="glass-card px-5 py-4 text-red-600 text-sm font-medium flex items-center justify-between">
+          <div
+            className="px-5 py-4 rounded-2xl text-sm font-medium flex items-center justify-between"
+            style={{ background: "rgba(227,51,51,0.15)", border: "1px solid rgba(227,51,51,0.3)", color: "#f88" }}
+          >
             <span>{error}</span>
             <button onClick={() => fetchData(periode.bulan, periode.tahun)} className="underline ml-4">Coba lagi</button>
           </div>
         )}
 
         {/* ── Row 1: 3 metric cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
 
-          {/* Perkiraan Pemasukan — brand gradient */}
+          {/* Perkiraan Pemasukan — brand gradient tetap */}
           {loading ? <SkeletonCard h="h-36" /> : (
-            <div className="balance-card shadow-card-xl">
-              <div className="flex items-center gap-2 text-blue-200 mb-2 font-medium text-sm">
+            <div className="rounded-2xl p-6 relative overflow-hidden" style={{
+              background: "linear-gradient(135deg, #254395 0%, #3354B4 100%)",
+              boxShadow: "0 8px 25px -5px rgba(37,67,149,0.5)",
+            }}>
+              <div className="flex items-center gap-2 text-blue-200 mb-3 font-medium text-xs uppercase tracking-wider">
                 <TrendingUp className="w-4 h-4" />
-                <span className="uppercase tracking-wide">Perkiraan Pemasukan</span>
+                <span>Perkiraan Pemasukan</span>
               </div>
               <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
                 {formatRupiah(data?.totalPerkiraanPemasukan ?? 0)}
               </div>
-              <div className="text-blue-100 text-sm">
+              <div className="text-blue-200/70 text-sm">
                 {data?.totalPelangganAktif ?? 0} pelanggan · {formatBulanTahun(periode.bulan, periode.tahun)}
               </div>
+              {/* decorative circle */}
+              <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none" />
+              <div className="absolute -right-2 -bottom-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none" />
             </div>
           )}
 
-          {/* Sudah Masuk — glass card dengan accent green corner */}
+          {/* Sudah Masuk */}
           {loading ? <SkeletonCard h="h-36" /> : (
-            <div className="glass-card p-6 relative overflow-hidden accent-corner-green">
-              <div className="flex items-center gap-2 text-gray-500 mb-2 font-medium text-sm">
-                <div className="w-6 h-6 rounded bg-accent-green-light text-accent-green flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <span className="uppercase tracking-wide">Sudah Masuk</span>
+            <div className="rounded-2xl p-6 relative overflow-hidden" style={{
+              background: "rgba(34,163,70,0.12)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(34,163,70,0.25)",
+            }}>
+              <div className="flex items-center gap-2 mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "#6ee89b" }}>
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Sudah Masuk</span>
               </div>
-              <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
                 {formatRupiah(data?.totalSudahMasuk ?? 0)}
               </div>
-              <div className="text-accent-green font-medium text-sm">
+              <div className="text-sm font-medium" style={{ color: "#6ee89b" }}>
                 {data?.jumlahLunas ?? 0} pelanggan lunas
               </div>
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full pointer-events-none" style={{ background: "rgba(34,163,70,0.15)" }} />
             </div>
           )}
 
-          {/* Belum Masuk — glass card dengan accent red corner */}
+          {/* Belum Masuk */}
           {loading ? <SkeletonCard h="h-36" /> : (
-            <div className="glass-card p-6 relative overflow-hidden accent-corner-red">
-              <div className="flex items-center gap-2 text-gray-500 mb-2 font-medium text-sm">
-                <div className="w-6 h-6 rounded bg-accent-red-light text-accent-red flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <span className="uppercase tracking-wide">Belum Masuk</span>
+            <div className="rounded-2xl p-6 relative overflow-hidden" style={{
+              background: "rgba(227,51,51,0.12)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(227,51,51,0.25)",
+            }}>
+              <div className="flex items-center gap-2 mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "#f88" }}>
+                <Clock className="w-4 h-4" />
+                <span>Belum Masuk</span>
               </div>
-              <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
                 {formatRupiah(data?.totalBelumMasuk ?? 0)}
               </div>
-              <div className="text-accent-red font-medium text-sm">
+              <div className="text-sm font-medium" style={{ color: "#f88" }}>
                 {data?.jumlahBelumBayar ?? 0} belum bayar · {data?.jumlahIsolir ?? 0} isolir
               </div>
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full pointer-events-none" style={{ background: "rgba(227,51,51,0.15)" }} />
             </div>
           )}
         </div>
 
         {/* ── Row 2: Status Pembayaran + Quick Actions ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
 
-          {/* Status Pembayaran — lg:col-span-2 */}
+          {/* Status Pembayaran */}
           {loading ? <SkeletonCard h="h-64" /> : (
-            <div className="glass-card p-5 lg:p-6 lg:col-span-2">
-              {/* Header card — stack di mobile, berdampingan di desktop */}
+            <div className="p-5 lg:p-6 lg:col-span-2 rounded-2xl" style={glassCard}>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg bg-accent-blue-light text-accent-blue flex items-center justify-center shrink-0">
-                    <Users className="w-5 h-5 lg:w-6 lg:h-6" />
+                  <div
+                    className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: "rgba(37,99,235,0.25)" }}
+                  >
+                    <Users className="w-5 h-5 lg:w-6 lg:h-6 text-blue-300" />
                   </div>
                   <div>
-                    <h3 className="text-base lg:text-lg font-bold text-gray-900">Status Pembayaran</h3>
-                    <p className="text-xs lg:text-sm text-gray-500">
+                    <h3 className="text-base lg:text-lg font-bold text-white">Status Pembayaran</h3>
+                    <p className="text-xs lg:text-sm text-blue-200/60">
                       {formatBulanTahun(data!.bulan, data!.tahun)} · {data!.totalPelangganAktif} aktif
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 sm:text-right sm:block">
-                  <div className="text-2xl lg:text-3xl font-bold text-brand">{progressPersen}%</div>
-                  <div className="text-xs text-gray-400">sudah lunas</div>
+                  <div className="text-2xl lg:text-3xl font-bold text-white">{progressPersen}%</div>
+                  <div className="text-xs text-blue-200/50">sudah lunas</div>
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-gray-100 rounded-full h-3 mb-5 overflow-hidden">
+              <div className="w-full rounded-full h-2.5 mb-5 overflow-hidden" style={{ background: "rgba(255,255,255,0.10)" }}>
                 <div
-                  className="h-3 rounded-full transition-all duration-700"
-                  style={{ width: `${progressPersen}%`, background: "#254395" }}
+                  className="h-2.5 rounded-full transition-all duration-700"
+                  style={{ width: `${progressPersen}%`, background: "linear-gradient(90deg, #3b82f6, #22c55e)" }}
                 />
               </div>
 
               {/* 3 tiles */}
-              <div className="grid grid-cols-3 gap-2 lg:gap-4">
+              <div className="grid grid-cols-3 gap-2 lg:gap-3">
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=lunas`)}
-                  className="bg-accent-green-light/50 border border-accent-green-light rounded-xl p-3 lg:p-4 text-center hover:bg-accent-green-light transition-colors"
+                  className="rounded-xl p-3 lg:p-4 text-center transition-all active:scale-95"
+                  style={{ background: "rgba(34,163,70,0.15)", border: "1px solid rgba(34,163,70,0.25)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(34,163,70,0.25)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(34,163,70,0.15)")}
                 >
-                  <div className="text-2xl lg:text-4xl font-bold text-accent-green-text mb-1">{data!.jumlahLunas}</div>
-                  <div className="flex justify-center items-center gap-1 text-accent-green-text text-xs lg:text-sm font-medium">
+                  <div className="text-2xl lg:text-4xl font-bold mb-1" style={{ color: "#6ee89b" }}>{data!.jumlahLunas}</div>
+                  <div className="flex justify-center items-center gap-1 text-xs lg:text-sm font-medium" style={{ color: "#6ee89b" }}>
                     <CheckCircle2 className="w-3 h-3 shrink-0" /> Lunas
                   </div>
                 </button>
 
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=belum_bayar`)}
-                  className="bg-accent-red-light/50 border border-accent-red-light rounded-xl p-3 lg:p-4 text-center hover:bg-accent-red-light transition-colors"
+                  className="rounded-xl p-3 lg:p-4 text-center transition-all active:scale-95"
+                  style={{ background: "rgba(227,51,51,0.15)", border: "1px solid rgba(227,51,51,0.25)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.25)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.15)")}
                 >
-                  <div className="text-2xl lg:text-4xl font-bold text-accent-red-text mb-1">{data!.jumlahBelumBayar}</div>
-                  <div className="flex justify-center items-center gap-1 text-accent-red-text text-xs lg:text-sm font-medium leading-tight">
+                  <div className="text-2xl lg:text-4xl font-bold mb-1" style={{ color: "#f88" }}>{data!.jumlahBelumBayar}</div>
+                  <div className="flex justify-center items-center gap-1 text-xs lg:text-sm font-medium leading-tight" style={{ color: "#f88" }}>
                     <Clock className="w-3 h-3 shrink-0" /><span>Belum Bayar</span>
                   </div>
                 </button>
 
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=isolir`)}
-                  className="bg-accent-gray-light border border-gray-200 rounded-xl p-3 lg:p-4 text-center hover:bg-gray-200 transition-colors"
+                  className="rounded-xl p-3 lg:p-4 text-center transition-all active:scale-95"
+                  style={{ background: "rgba(107,114,128,0.15)", border: "1px solid rgba(107,114,128,0.25)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(107,114,128,0.25)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(107,114,128,0.15)")}
                 >
-                  <div className="text-2xl lg:text-4xl font-bold text-gray-700 mb-1">{data!.jumlahIsolir}</div>
-                  <div className="flex justify-center items-center gap-1 text-gray-500 text-xs lg:text-sm font-medium">
+                  <div className="text-2xl lg:text-4xl font-bold text-white/80 mb-1">{data!.jumlahIsolir}</div>
+                  <div className="flex justify-center items-center gap-1 text-blue-200/60 text-xs lg:text-sm font-medium">
                     <WifiOff className="w-3 h-3 shrink-0" /> Isolir
                   </div>
                 </button>
@@ -458,36 +533,48 @@ function DashboardContent() {
           )}
 
           {/* Quick Actions */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
             {loading ? (
-              <><SkeletonCard h="h-28" /><SkeletonCard h="h-28" /></>
+              <><SkeletonCard h="h-32" /><SkeletonCard h="h-32" /></>
             ) : (
               <>
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=belum_bayar`)}
-                  className="glass-card p-6 flex flex-col justify-between hover:shadow-card-xl transition-shadow cursor-pointer text-left"
+                  className="rounded-2xl p-5 flex flex-col justify-between text-left transition-all active:scale-[0.98] hover:border-red-400/40"
+                  style={{ ...glassCard, background: "rgba(227,51,51,0.10)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.18)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.10)")}
                 >
-                  <div className="w-10 h-10 rounded bg-accent-red-light text-accent-red flex items-center justify-center mb-4">
-                    <Clock className="w-5 h-5" />
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: "rgba(227,51,51,0.25)" }}
+                  >
+                    <Clock className="w-5 h-5" style={{ color: "#f88" }} />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-gray-900 mb-1">
+                    <h4 className="text-xl font-bold text-white mb-1">
                       {(data!.jumlahBelumBayar + data!.jumlahIsolir)} perlu tindakan
                     </h4>
-                    <p className="text-sm text-gray-400">Belum bayar + isolir →</p>
+                    <p className="text-sm text-blue-200/50">Belum bayar + isolir →</p>
                   </div>
                 </button>
 
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}`)}
-                  className="glass-card p-6 flex flex-col justify-between hover:shadow-card-xl transition-shadow cursor-pointer text-left"
+                  className="rounded-2xl p-5 flex flex-col justify-between text-left transition-all active:scale-[0.98]"
+                  style={glassCard}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
                 >
-                  <div className="w-10 h-10 rounded bg-accent-blue-light text-accent-blue flex items-center justify-center mb-4">
-                    <Users className="w-5 h-5" />
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: "rgba(37,99,235,0.25)" }}
+                  >
+                    <Users className="w-5 h-5 text-blue-300" />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-gray-900 mb-1">Semua Pelanggan</h4>
-                    <p className="text-sm text-gray-400">Lihat &amp; kelola data →</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Semua Pelanggan</h4>
+                    <p className="text-sm text-blue-200/50">Lihat &amp; kelola data →</p>
                   </div>
                 </button>
               </>

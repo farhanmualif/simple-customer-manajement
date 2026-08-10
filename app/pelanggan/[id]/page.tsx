@@ -91,54 +91,63 @@ function CariPelangganDropdown({
   return (
     <div ref={wrapperRef} className="relative">
       <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none" />
         <input
           type="search"
           placeholder="Cari pelanggan lain..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Escape" && (setOpen(false), setQuery(""))}
-          className="w-full h-11 rounded-xl border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300 shadow-sm transition-shadow"
+          className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-10 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+          style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)" }}
         />
         {query && (
           <button
             onClick={() => { setQuery(""); setResults([]); setOpen(false); }}
             className="absolute right-3 top-1/2 -translate-y-1/2"
           >
-            <X className="w-4 h-4 text-slate-400" />
+            <X className="w-4 h-4 text-blue-200/50" />
           </button>
         )}
       </div>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-1.5 w-full bg-white rounded-2xl shadow-card-md border border-slate-100 overflow-hidden">
+        <div
+          className="absolute z-50 mt-1.5 w-full rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(17,36,76,0.97)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 8px 32px -4px rgba(0,0,0,0.5)",
+          }}
+        >
           {loading ? (
             <div className="p-3 space-y-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-10 rounded-xl bg-slate-100 animate-pulse" />
+                <div key={i} className="h-10 rounded-xl bg-white/10 animate-pulse" />
               ))}
             </div>
           ) : results.length === 0 ? (
-            <div className="py-6 text-center text-sm text-slate-400">Tidak ada hasil</div>
+            <div className="py-6 text-center text-sm text-blue-200/50">Tidak ada hasil</div>
           ) : (
-            <div className="py-1.5 max-h-72 overflow-y-auto">
+            <div className="py-1.5 max-h-72 overflow-y-auto scrollbar-none">
               {results.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => handleSelect(p)}
-                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-white/10 active:bg-white/15 transition-colors text-left"
                 >
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
-                    p.statusBulanIni === "LUNAS"  ? "bg-success-100 text-success-700" :
-                    p.statusBulanIni === "ISOLIR" ? "bg-slate-200 text-slate-500" :
-                                                    "bg-danger-100 text-danger-700"
+                    p.statusBulanIni === "LUNAS"  ? "bg-green-500/20 text-green-300" :
+                    p.statusBulanIni === "ISOLIR" ? "bg-slate-500/20 text-slate-300" :
+                                                    "bg-red-500/20 text-red-300"
                   }`}>
                     {p.nama.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-800 text-sm truncate">{p.nama}</p>
-                    <p className="text-xs text-slate-400 truncate">{p.alamat ?? p.paket.namaPaket}</p>
+                    <p className="font-semibold text-white text-sm truncate">{p.nama}</p>
+                    <p className="text-xs text-blue-200/60 truncate">{p.alamat ?? p.paket.namaPaket}</p>
                   </div>
                   <Badge variant={statusVariant(p.statusBulanIni)} className="text-xs shrink-0">
                     {statusLabel(p.statusBulanIni)}
@@ -231,48 +240,67 @@ function EditPelangganCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-      {/* Header card edit */}
-      <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center shrink-0">
-          <Pencil className="w-5 h-5 text-brand-600" />
+    <div className="rounded-2xl overflow-hidden" style={glassCard}>
+      {/* Header */}
+      <div className="px-5 pt-5 pb-4 border-b border-white/10 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(37,99,235,0.25)" }}>
+          <Pencil className="w-5 h-5 text-blue-300" />
         </div>
         <div>
-          <p className="font-bold text-slate-800">Edit Pelanggan</p>
-          <p className="text-xs text-slate-400">Ubah data pelanggan</p>
+          <p className="font-bold text-white">Edit Pelanggan</p>
+          <p className="text-xs text-blue-200/60">Ubah data pelanggan</p>
         </div>
       </div>
 
       <div className="p-5 space-y-4">
         {/* Nama */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-nama">Nama Pelanggan</Label>
-          <Input id="edit-nama" value={form.nama}
-            onChange={(e) => { set("nama", e.target.value); setErr(""); }} />
+          <label className="text-sm font-semibold text-blue-100/80">Nama Pelanggan</label>
+          <input
+            id="edit-nama"
+            value={form.nama}
+            onChange={(e) => { set("nama", e.target.value); setErr(""); }}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
 
         {/* No WhatsApp */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-wa">No. WhatsApp</Label>
-          <Input id="edit-wa" type="tel" inputMode="numeric" placeholder="08123456789"
-            value={form.noWhatsapp} onChange={(e) => set("noWhatsapp", e.target.value)} />
+          <label className="text-sm font-semibold text-blue-100/80">No. WhatsApp</label>
+          <input
+            id="edit-wa"
+            type="tel"
+            inputMode="numeric"
+            placeholder="08123456789"
+            value={form.noWhatsapp}
+            onChange={(e) => set("noWhatsapp", e.target.value)}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
 
         {/* Alamat */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-alamat">Alamat / Wilayah</Label>
-          <Input id="edit-alamat" placeholder="misal: Bogolan Tanjakan"
-            value={form.alamat} onChange={(e) => set("alamat", e.target.value)} />
+          <label className="text-sm font-semibold text-blue-100/80">Alamat / Wilayah</label>
+          <input
+            id="edit-alamat"
+            placeholder="misal: Bogolan Tanjakan"
+            value={form.alamat}
+            onChange={(e) => set("alamat", e.target.value)}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
 
         {/* Paket */}
         <div className="space-y-1.5">
-          <Label>Paket Internet</Label>
+          <label className="text-sm font-semibold text-blue-100/80">Paket Internet</label>
           {loadingPaket ? (
-            <div className="h-12 bg-slate-100 rounded-xl animate-pulse" />
+            <div className="h-11 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.08)" }} />
           ) : (
             <Select value={form.paketId} onValueChange={(v) => set("paketId", v)}>
-              <SelectTrigger>
+              <SelectTrigger className="border-white/15 text-white bg-white/[0.08] focus:ring-brand-400/50">
                 <SelectValue placeholder="Pilih paket..." />
               </SelectTrigger>
               <SelectContent>
@@ -288,51 +316,85 @@ function EditPelangganCard({
 
         {/* Tanggal Jatuh Tempo */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-tgl">Tanggal Jatuh Tempo <span className="text-slate-400 font-normal text-xs">(1–31)</span></Label>
-          <Input id="edit-tgl" type="number" inputMode="numeric" min={1} max={31}
+          <label className="text-sm font-semibold text-blue-100/80">
+            Tanggal Jatuh Tempo <span className="text-blue-200/40 font-normal text-xs">(1–31)</span>
+          </label>
+          <input
+            id="edit-tgl"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={31}
             value={form.tanggalJatuhTempo}
-            onChange={(e) => { set("tanggalJatuhTempo", e.target.value); setErr(""); }} />
+            onChange={(e) => { set("tanggalJatuhTempo", e.target.value); setErr(""); }}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)", colorScheme: "dark" }}
+          />
         </div>
 
         {/* Secrets PPPoE */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-pppoe">Secrets PPPoE</Label>
-          <Input id="edit-pppoe" className="font-mono" placeholder="misal: BUDI@BOGOLAN"
-            value={form.secretsPppoe} onChange={(e) => set("secretsPppoe", e.target.value)} />
+          <label className="text-sm font-semibold text-blue-100/80">Secrets PPPoE</label>
+          <input
+            id="edit-pppoe"
+            placeholder="misal: BUDI@BOGOLAN"
+            value={form.secretsPppoe}
+            onChange={(e) => set("secretsPppoe", e.target.value)}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white font-mono placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
 
         {/* Blok Area */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-blok">Blok Area / ODP</Label>
-          <Input id="edit-blok" placeholder="misal: odp rt darso"
-            value={form.blokArea} onChange={(e) => set("blokArea", e.target.value)} />
+          <label className="text-sm font-semibold text-blue-100/80">Blok Area / ODP</label>
+          <input
+            id="edit-blok"
+            placeholder="misal: odp rt darso"
+            value={form.blokArea}
+            onChange={(e) => set("blokArea", e.target.value)}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
 
         {/* Keterangan */}
         <div className="space-y-1.5">
-          <Label htmlFor="edit-ket">Keterangan</Label>
-          <Input id="edit-ket" placeholder="misal: aktif 14 juli, cdata, tplink"
-            value={form.keterangan} onChange={(e) => set("keterangan", e.target.value)} />
+          <label className="text-sm font-semibold text-blue-100/80">Keterangan</label>
+          <input
+            id="edit-ket"
+            placeholder="misal: aktif 14 juli, cdata, tplink"
+            value={form.keterangan}
+            onChange={(e) => set("keterangan", e.target.value)}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
 
         {/* PPN & Kupon */}
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" checked={form.ppn}
+            <input
+              type="checkbox"
+              checked={form.ppn}
               onChange={(e) => set("ppn", e.target.checked)}
-              className="w-4 h-4 rounded accent-brand-600" />
-            <span className="text-sm font-medium text-slate-700">Kena PPN</span>
+              className="w-4 h-4 rounded accent-brand-400"
+            />
+            <span className="text-sm font-medium text-blue-100/80">Kena PPN</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" checked={form.kupon}
+            <input
+              type="checkbox"
+              checked={form.kupon}
               onChange={(e) => set("kupon", e.target.checked)}
-              className="w-4 h-4 rounded accent-brand-600" />
-            <span className="text-sm font-medium text-slate-700">Ada Kupon</span>
+              className="w-4 h-4 rounded accent-brand-400"
+            />
+            <span className="text-sm font-medium text-blue-100/80">Ada Kupon</span>
           </label>
         </div>
 
         {err && (
-          <p className="text-danger-600 text-sm font-medium bg-danger-50 rounded-xl px-4 py-2.5">{err}</p>
+          <p className="text-sm font-medium rounded-xl px-4 py-2.5" style={{ background: "rgba(227,51,51,0.15)", color: "#f88", border: "1px solid rgba(227,51,51,0.3)" }}>{err}</p>
         )}
 
         {/* Tombol aksi */}
@@ -340,14 +402,14 @@ function EditPelangganCard({
           <button
             onClick={onCancel}
             disabled={saving}
-            className="flex-1 h-11 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            className="flex-1 h-11 rounded-xl border border-white/20 text-blue-200 font-semibold text-sm hover:bg-white/10 disabled:opacity-50 transition-colors"
           >
             Batal
           </button>
           <button
             onClick={handleSimpan}
             disabled={saving}
-            className="flex-1 h-11 rounded-xl bg-brand-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-700 disabled:opacity-60 shadow-card transition-colors"
+            className="flex-1 h-11 rounded-xl bg-brand-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-700 disabled:opacity-60 transition-colors"
           >
             {saving
               ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menyimpan...</>
@@ -425,86 +487,105 @@ function TagihanForm({
     catatan !== (currentCatatan ?? "");
 
   return (
-    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-      <div className="px-5 pt-5 pb-3 border-b border-slate-100">
-        <p className="font-bold text-slate-800">Update Tagihan</p>
-        <p className="text-xs text-slate-400 mt-0.5">Pilih bulan &amp; status pembayaran</p>
+    <div className="rounded-2xl overflow-hidden" style={glassCard}>
+      <div className="px-5 pt-5 pb-3 border-b border-white/10">
+        <p className="font-bold text-white">Update Tagihan</p>
+        <p className="text-xs text-blue-200/60 mt-0.5">Pilih bulan &amp; status pembayaran</p>
       </div>
       <div className="p-5 space-y-4">
         {/* Pilih bulan tagihan */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700">Bulan Tagihan</label>
-          <div className="flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-2.5">
+          <label className="text-sm font-semibold text-blue-100/80">Bulan Tagihan</label>
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.08)" }}>
             <button
               onClick={() => { const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, -1); setPeriodeTagihan(p); setOk(false); }}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-200 hover:bg-white/15 active:bg-white/20 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="flex-1 text-center font-semibold text-slate-800 text-sm">
+            <span className="flex-1 text-center font-semibold text-white text-sm">
               {formatBulanTahun(periodeTagihan.bulan, periodeTagihan.tahun)}
             </span>
             <button
               onClick={() => { const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, 1); setPeriodeTagihan(p); setOk(false); }}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-200 hover:bg-white/15 active:bg-white/20 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           {isBulanDepan && (
-            <p className="text-xs text-warning-600 font-medium flex items-center gap-1">
+            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#fcd34d" }}>
               📅 Tagihan bulan depan ({formatBulanTahun(periodeTagihan.bulan, periodeTagihan.tahun)})
             </p>
           )}
         </div>
         {/* Status */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700">Status</label>
+          <label className="text-sm font-semibold text-blue-100/80">Status</label>
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value as StatusTagihan); setErr(""); setOk(false); }}
-            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-semibold text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-colors appearance-none cursor-pointer"
-            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center" }}
+            className="w-full h-12 rounded-xl px-4 text-base font-semibold text-white focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-colors appearance-none cursor-pointer border border-white/15"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              colorScheme: "dark",
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2393c5fd' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 14px center",
+            }}
           >
-            <option value="LUNAS">✅  Lunas</option>
-            <option value="BELUM_BAYAR">⏳  Belum Bayar</option>
-            <option value="ISOLIR">🔴  Isolir</option>
+            <option value="LUNAS" style={{ background: "#11244C" }}>✅  Lunas</option>
+            <option value="BELUM_BAYAR" style={{ background: "#11244C" }}>⏳  Belum Bayar</option>
+            <option value="ISOLIR" style={{ background: "#11244C" }}>🔴  Isolir</option>
           </select>
         </div>
         {/* Nominal */}
         {status === "LUNAS" && (
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">Nominal Bayar</label>
+            <label className="text-sm font-semibold text-blue-100/80">Nominal Bayar</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-sm pointer-events-none">Rp</span>
-              <Input type="number" inputMode="numeric" className="pl-10 text-base font-semibold"
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-200/70 font-semibold text-sm pointer-events-none">Rp</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-4 text-base font-semibold text-white focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+                style={{ background: "rgba(255,255,255,0.08)", colorScheme: "dark" }}
                 value={nominal}
                 onChange={(e) => { setNominal(e.target.value.replace(/\D/g, "")); setErr(""); }}
-                placeholder={String(hargaPaket)} />
+                placeholder={String(hargaPaket)}
+              />
             </div>
             {parseInt(nominal, 10) !== hargaPaket && parseInt(nominal, 10) > 0 && (
-              <p className="text-xs text-warning-600 font-medium">⚠ Berbeda dari harga paket ({formatRupiah(hargaPaket)})</p>
+              <p className="text-xs font-medium" style={{ color: "#fcd34d" }}>⚠ Berbeda dari harga paket ({formatRupiah(hargaPaket)})</p>
             )}
           </div>
         )}
         {/* Catatan */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700">
-            Catatan <span className="font-normal text-slate-400 text-xs">(opsional)</span>
+          <label className="text-sm font-semibold text-blue-100/80">
+            Catatan <span className="font-normal text-blue-200/40 text-xs">(opsional)</span>
           </label>
-          <Input type="text" placeholder="misal: diskon, cicilan, keterangan"
-            value={catatan} onChange={(e) => { setCatatan(e.target.value); setOk(false); }} />
+          <input
+            type="text"
+            placeholder="misal: diskon, cicilan, keterangan"
+            value={catatan}
+            onChange={(e) => { setCatatan(e.target.value); setOk(false); }}
+            className="w-full h-11 rounded-xl border border-white/15 px-4 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          />
         </div>
-        {err && <p className="text-danger-600 text-sm font-medium bg-danger-50 rounded-xl px-4 py-2.5">{err}</p>}
+        {err && (
+          <p className="text-sm font-medium rounded-xl px-4 py-2.5" style={{ background: "rgba(227,51,51,0.15)", color: "#f88", border: "1px solid rgba(227,51,51,0.3)" }}>{err}</p>
+        )}
         {ok && (
-          <p className="text-success-700 text-sm font-medium bg-success-50 rounded-xl px-4 py-2.5 flex items-center gap-2">
+          <p className="text-sm font-medium rounded-xl px-4 py-2.5 flex items-center gap-2" style={{ background: "rgba(34,163,70,0.15)", color: "#6ee89b", border: "1px solid rgba(34,163,70,0.3)" }}>
             <CheckCircle2 className="w-4 h-4" /> Tersimpan!
           </p>
         )}
         <button
           onClick={handleSimpan}
           disabled={saving || (!changed && !ok)}
-          className="w-full h-13 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98] shadow-card"
+          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98]"
         >
           {saving
             ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menyimpan...</>
@@ -517,6 +598,15 @@ function TagihanForm({
 }
 
 // ── Info Pelanggan Card (mode tampil) ─────────────────────────────────────────
+// shared glass card style for detail page
+const glassCard: React.CSSProperties = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.12)",
+};
+const iconBox = "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/10";
+
 function InfoPelangganCard({
   data, currentStatus, onEdit,
 }: {
@@ -527,75 +617,112 @@ function InfoPelangganCard({
     if (no) window.open(`https://wa.me/${no}`, "_blank");
   };
 
+  const avatarStyle: React.CSSProperties =
+    currentStatus === "LUNAS"
+      ? { background: "rgba(34,163,70,0.25)", color: "#6ee89b" }
+      : currentStatus === "ISOLIR"
+      ? { background: "rgba(107,114,128,0.25)", color: "#cbd5e1" }
+      : { background: "rgba(227,51,51,0.25)", color: "#f88" };
+
   return (
-    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-      <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0 ${
-          currentStatus === "LUNAS"  ? "bg-success-100 text-success-700" :
-          currentStatus === "ISOLIR" ? "bg-slate-200 text-slate-500" :
-                                       "bg-danger-100 text-danger-700"
-        }`}>
+    <div className="rounded-2xl overflow-hidden" style={glassCard}>
+      {/* Header */}
+      <div className="p-5 border-b border-white/10 flex items-center gap-3">
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0"
+          style={avatarStyle}
+        >
           {data.nama.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-slate-800 text-lg leading-tight truncate">{data.nama}</p>
-          {data.nomorUrut && <p className="text-xs text-slate-400">No. {data.nomorUrut}</p>}
+          <p className="font-bold text-white text-lg leading-tight truncate">{data.nama}</p>
+          {data.nomorUrut && <p className="text-xs text-blue-200/60">No. {data.nomorUrut}</p>}
         </div>
-        {/* Tombol Edit */}
         <button
           onClick={onEdit}
-          className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors shrink-0"
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-blue-200/70 hover:bg-white/15 hover:text-white transition-colors shrink-0"
+          style={{ background: "rgba(255,255,255,0.08)" }}
           title="Edit pelanggan"
         >
           <Pencil className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Body */}
       <div className="p-5 space-y-3">
         {data.noWhatsapp && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Phone className="w-4 h-4 text-slate-500" /></div>
-            <div className="flex-1"><p className="text-xs text-slate-400">No. WhatsApp</p><p className="font-semibold text-slate-800 text-sm">{data.noWhatsapp}</p></div>
-            <button onClick={openWhatsApp} className="w-9 h-9 rounded-xl bg-success-100 flex items-center justify-center hover:bg-success-200 transition-colors">
-              <MessageCircle className="w-4 h-4 text-success-600" />
+            <div className={iconBox}><Phone className="w-4 h-4 text-blue-200/70" /></div>
+            <div className="flex-1">
+              <p className="text-xs text-blue-200/50">No. WhatsApp</p>
+              <p className="font-semibold text-white text-sm">{data.noWhatsapp}</p>
+            </div>
+            <button
+              onClick={openWhatsApp}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-green-500/20 transition-colors"
+              style={{ background: "rgba(34,163,70,0.15)" }}
+            >
+              <MessageCircle className="w-4 h-4 text-green-400" />
             </button>
           </div>
         )}
         {data.alamat && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><MapPin className="w-4 h-4 text-slate-500" /></div>
-            <div><p className="text-xs text-slate-400">Alamat</p><p className="font-semibold text-slate-800 text-sm">{data.alamat}</p></div>
+            <div className={iconBox}><MapPin className="w-4 h-4 text-blue-200/70" /></div>
+            <div>
+              <p className="text-xs text-blue-200/50">Alamat</p>
+              <p className="font-semibold text-white text-sm">{data.alamat}</p>
+            </div>
           </div>
         )}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Wifi className="w-4 h-4 text-slate-500" /></div>
-          <div><p className="text-xs text-slate-400">Paket</p><p className="font-semibold text-slate-800 text-sm">{data.paket.namaPaket} <span className="text-brand-600">· {formatRupiah(data.paket.harga)}/bln</span></p></div>
+          <div className={iconBox}><Wifi className="w-4 h-4 text-blue-200/70" /></div>
+          <div>
+            <p className="text-xs text-blue-200/50">Paket</p>
+            <p className="font-semibold text-white text-sm">
+              {data.paket.namaPaket}{" "}
+              <span className="text-blue-300">· {formatRupiah(data.paket.harga)}/bln</span>
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Calendar className="w-4 h-4 text-slate-500" /></div>
-          <div><p className="text-xs text-slate-400">Jatuh Tempo</p><p className="font-semibold text-slate-800 text-sm">Tanggal {data.tanggalJatuhTempo} tiap bulan</p></div>
+          <div className={iconBox}><Calendar className="w-4 h-4 text-blue-200/70" /></div>
+          <div>
+            <p className="text-xs text-blue-200/50">Jatuh Tempo</p>
+            <p className="font-semibold text-white text-sm">Tanggal {data.tanggalJatuhTempo} tiap bulan</p>
+          </div>
         </div>
         {data.secretsPppoe && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Router className="w-4 h-4 text-slate-500" /></div>
-            <div><p className="text-xs text-slate-400">Secrets PPPoE</p><p className="font-semibold text-slate-800 text-sm font-mono">{data.secretsPppoe}</p></div>
+            <div className={iconBox}><Router className="w-4 h-4 text-blue-200/70" /></div>
+            <div>
+              <p className="text-xs text-blue-200/50">Secrets PPPoE</p>
+              <p className="font-semibold text-white text-sm font-mono">{data.secretsPppoe}</p>
+            </div>
           </div>
         )}
         {data.blokArea && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Tag className="w-4 h-4 text-slate-500" /></div>
-            <div><p className="text-xs text-slate-400">Blok Area / ODP</p><p className="font-semibold text-slate-800 text-sm">{data.blokArea}</p></div>
+            <div className={iconBox}><Tag className="w-4 h-4 text-blue-200/70" /></div>
+            <div>
+              <p className="text-xs text-blue-200/50">Blok Area / ODP</p>
+              <p className="font-semibold text-white text-sm">{data.blokArea}</p>
+            </div>
           </div>
         )}
         {data.keterangan && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Edit className="w-4 h-4 text-slate-500" /></div>
-            <div><p className="text-xs text-slate-400">Keterangan</p><p className="font-semibold text-slate-800 text-sm">{data.keterangan}</p></div>
+            <div className={iconBox}><Edit className="w-4 h-4 text-blue-200/70" /></div>
+            <div>
+              <p className="text-xs text-blue-200/50">Keterangan</p>
+              <p className="font-semibold text-white text-sm">{data.keterangan}</p>
+            </div>
           </div>
         )}
         {(data.ppn || data.kupon) && (
           <div className="flex gap-2 pt-1">
-            {data.ppn   && <span className="text-xs bg-warning-100 text-warning-700 font-semibold px-2 py-1 rounded-lg">PPN</span>}
-            {data.kupon && <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-2 py-1 rounded-lg">Kupon</span>}
+            {data.ppn   && <span className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: "rgba(245,158,11,0.2)", color: "#fcd34d" }}>PPN</span>}
+            {data.kupon && <span className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: "rgba(37,99,235,0.25)", color: "#93c5fd" }}>Kupon</span>}
           </div>
         )}
       </div>
@@ -685,7 +812,11 @@ function DetailContent({ id }: { id: string }) {
     <AppShell pageTitle="Detail Pelanggan" headerRight={headerRight}>
       <div className="p-4 lg:p-8 space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl h-28 animate-pulse" />
+          <div
+            key={i}
+            className="rounded-2xl h-28 animate-pulse"
+            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.10)" }}
+          />
         ))}
       </div>
     </AppShell>
@@ -694,9 +825,9 @@ function DetailContent({ id }: { id: string }) {
   if (error || !data) return (
     <AppShell pageTitle="Detail Pelanggan" headerRight={headerRight}>
       <div className="flex flex-col items-center justify-center min-h-64 p-8 text-center">
-        <Users className="w-12 h-12 text-slate-300 mb-4" />
-        <p className="text-slate-500 mb-4">{error || "Data tidak ditemukan."}</p>
-        <button onClick={() => router.push("/pelanggan")} className="px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold">
+        <Users className="w-12 h-12 text-blue-200/30 mb-4" />
+        <p className="text-blue-200/60 mb-4">{error || "Data tidak ditemukan."}</p>
+        <button onClick={() => router.push("/pelanggan")} className="px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors">
           Kembali ke Daftar
         </button>
       </div>
@@ -744,7 +875,10 @@ function DetailContent({ id }: { id: string }) {
 
             {/* Feedback edit berhasil */}
             {editOk && (
-              <div className="flex items-center gap-2 bg-success-50 text-success-700 text-sm font-medium px-4 py-2.5 rounded-xl border border-success-200">
+              <div
+                className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl"
+                style={{ background: "rgba(34,163,70,0.15)", color: "#6ee89b", border: "1px solid rgba(34,163,70,0.3)" }}
+              >
                 <CheckCircle2 className="w-4 h-4 shrink-0" /> Data pelanggan berhasil diperbarui
               </div>
             )}
@@ -779,45 +913,58 @@ function DetailContent({ id }: { id: string }) {
 
           {/* ── Kanan: Riwayat Tagihan ── */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-              <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-slate-100">
-                <p className="font-bold text-slate-800">Riwayat Tagihan</p>
-                <span className="text-xs text-slate-400">{data.riwayatTagihan.length} bulan</span>
+            <div className="rounded-2xl overflow-hidden" style={glassCard}>
+              <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-white/10">
+                <p className="font-bold text-white">Riwayat Tagihan</p>
+                <span className="text-xs text-blue-200/50">{data.riwayatTagihan.length} bulan</span>
               </div>
 
               {data.riwayatTagihan.length === 0 ? (
                 <div className="text-center py-10">
-                  <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-slate-400 text-sm">Belum ada riwayat tagihan</p>
+                  <Clock className="w-8 h-8 text-blue-200/30 mx-auto mb-2" />
+                  <p className="text-blue-200/50 text-sm">Belum ada riwayat tagihan</p>
                 </div>
               ) : (
                 <div>
-                  <div className="hidden lg:grid grid-cols-5 gap-3 px-5 py-3 bg-slate-50 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                  <div className="hidden lg:grid grid-cols-5 gap-3 px-5 py-3 border-b border-white/10 text-xs font-semibold text-blue-200/50 uppercase tracking-wide">
                     <span>Periode</span><span>Tagihan</span><span>Dibayar</span><span>Tgl Bayar</span><span>Status</span>
                   </div>
-                  <div className="divide-y divide-slate-50">
+                  <div className="divide-y divide-white/5">
                     {data.riwayatTagihan.map((t) => {
                       const isCurrent = t.bulan === periode.bulan && t.tahun === periode.tahun;
                       return (
-                        <div key={t.id} className={`px-5 py-3.5 transition-colors ${isCurrent ? "bg-brand-50" : "hover:bg-slate-50"}`}>
+                        <div
+                          key={t.id}
+                          className="px-5 py-3.5 transition-colors"
+                          style={isCurrent ? { background: "rgba(37,99,235,0.15)" } : {}}
+                        >
                           {/* Mobile */}
                           <div className="flex items-center gap-3 lg:hidden">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${t.status === "LUNAS" ? "bg-success-100" : t.status === "ISOLIR" ? "bg-slate-200" : "bg-danger-100"}`}>
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                              style={
+                                t.status === "LUNAS"
+                                  ? { background: "rgba(34,163,70,0.2)" }
+                                  : t.status === "ISOLIR"
+                                  ? { background: "rgba(107,114,128,0.2)" }
+                                  : { background: "rgba(227,51,51,0.2)" }
+                              }
+                            >
                               <StatusIcon s={t.status} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <p className="font-semibold text-slate-800 text-sm">{getNamaBulan(t.bulan)} {t.tahun}</p>
-                                {isCurrent && <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-1.5 py-0.5 rounded">ini</span>}
+                                <p className="font-semibold text-white text-sm">{getNamaBulan(t.bulan)} {t.tahun}</p>
+                                {isCurrent && <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ background: "rgba(37,99,235,0.3)", color: "#93c5fd" }}>ini</span>}
                               </div>
-                              {t.status === "LUNAS" && t.tanggalBayar && <p className="text-xs text-slate-400">{formatTanggal(t.tanggalBayar)}</p>}
-                              {t.catatan && <p className="text-xs text-warning-600 mt-0.5">{t.catatan}</p>}
+                              {t.status === "LUNAS" && t.tanggalBayar && <p className="text-xs text-blue-200/50">{formatTanggal(t.tanggalBayar)}</p>}
+                              {t.catatan && <p className="text-xs mt-0.5" style={{ color: "#fcd34d" }}>{t.catatan}</p>}
                             </div>
                             <div className="text-right shrink-0">
                               {t.status === "LUNAS" && t.nominalBayar ? (
                                 <>
-                                  <p className="font-bold text-sm text-success-600">{formatRupiah(t.nominalBayar)}</p>
-                                  {t.nominalBayar !== t.nominalTagihan && <p className="text-xs text-slate-400 line-through">{formatRupiah(t.nominalTagihan)}</p>}
+                                  <p className="font-bold text-sm" style={{ color: "#6ee89b" }}>{formatRupiah(t.nominalBayar)}</p>
+                                  {t.nominalBayar !== t.nominalTagihan && <p className="text-xs text-blue-200/40 line-through">{formatRupiah(t.nominalTagihan)}</p>}
                                 </>
                               ) : <Badge variant={statusVariant(t.status)} className="text-xs">{statusLabel(t.status)}</Badge>}
                             </div>
@@ -825,23 +972,23 @@ function DetailContent({ id }: { id: string }) {
                           {/* Desktop */}
                           <div className="hidden lg:grid grid-cols-5 gap-3 items-center">
                             <div className="flex items-center gap-2">
-                              <p className="font-semibold text-slate-800 text-sm">{getNamaBulan(t.bulan)} {t.tahun}</p>
-                              {isCurrent && <span className="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-semibold">ini</span>}
+                              <p className="font-semibold text-white text-sm">{getNamaBulan(t.bulan)} {t.tahun}</p>
+                              {isCurrent && <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ background: "rgba(37,99,235,0.3)", color: "#93c5fd" }}>ini</span>}
                             </div>
-                            <p className="text-sm text-slate-600">{formatRupiah(t.nominalTagihan)}</p>
+                            <p className="text-sm text-blue-100/70">{formatRupiah(t.nominalTagihan)}</p>
                             <div>
                               {t.status === "LUNAS" && t.nominalBayar
-                                ? <p className={`text-sm font-bold ${t.nominalBayar < t.nominalTagihan ? "text-warning-600" : "text-success-600"}`}>{formatRupiah(t.nominalBayar)}</p>
-                                : <span className="text-slate-400">—</span>}
+                                ? <p className="text-sm font-bold" style={{ color: t.nominalBayar < t.nominalTagihan ? "#fcd34d" : "#6ee89b" }}>{formatRupiah(t.nominalBayar)}</p>
+                                : <span className="text-blue-200/30">—</span>}
                             </div>
                             <div>
                               {t.status === "LUNAS" && t.tanggalBayar
-                                ? <p className="text-sm text-slate-600">{formatTanggal(t.tanggalBayar)}</p>
-                                : <span className="text-slate-400">—</span>}
+                                ? <p className="text-sm text-blue-100/70">{formatTanggal(t.tanggalBayar)}</p>
+                                : <span className="text-blue-200/30">—</span>}
                             </div>
                             <div>
                               <Badge variant={statusVariant(t.status)} className="text-xs">{statusLabel(t.status)}</Badge>
-                              {t.catatan && <p className="text-xs text-warning-600 mt-1">{t.catatan}</p>}
+                              {t.catatan && <p className="text-xs mt-1" style={{ color: "#fcd34d" }}>{t.catatan}</p>}
                             </div>
                           </div>
                         </div>

@@ -4,6 +4,7 @@ import { getSession } from "@/lib/session";
 import { parsePeriodeQuery } from "@/lib/utils";
 
 // GET /api/pelanggan?bulan=8&tahun=2026&search=&filter=semua&page=1&limit=20&tanggalBayar=YYYY-MM-DD&jatuhTempo=10
+// filter values: semua | lunas | belum_bayar | isolir | belum_bayar_3hari | bayar_hari_ini
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
@@ -22,6 +23,13 @@ export async function GET(req: NextRequest) {
     const limit        = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
     const tanggalBayar = searchParams.get("tanggalBayar"); // YYYY-MM-DD atau null
     const jatuhTempo   = searchParams.get("jatuhTempo");   // "1"-"28" atau null
+
+    // Hari ini (WIB = UTC+7)
+    const now     = new Date();
+    const hariIni = now.getUTCDate() + (now.getUTCHours() >= 17 ? 1 : 0); // sederhana; pakai date lokal server
+    const todayLocal = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const todayStr = todayLocal.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    const todayDay = todayLocal.getUTCDate();
 
     // jatuhTempo bisa langsung di DB-level WHERE (field tanggalJatuhTempo)
     const where = {
@@ -52,11 +60,33 @@ export async function GET(req: NextRequest) {
 
       // Filter status
       if (needsStatusFilter) {
-        mapped =
-          filter === "lunas"       ? mapped.filter((p) => p.statusBulanIni === "LUNAS") :
-          filter === "belum_bayar" ? mapped.filter((p) => p.statusBulanIni === "BELUM_BAYAR") :
-          filter === "isolir"      ? mapped.filter((p) => p.statusBulanIni === "ISOLIR") :
-          mapped;
+        if (filter === "lunas") {
+          mapped = mapped.filter((p) => p.statusBulanIni === "LUNAS");
+        } else if (filter === "belum_bayar") {
+          mapped = mapped.filter((p) => p.statusBulanIni === "BELUM_BAYAR");
+        } else if (filter === "isolir") {
+          mapped = mapped.filter((p) => p.statusBulanIni === "ISOLIR");
+        } else if (filter === "belum_bayar_3hari") {
+          // Belum bayar DAN jatuh tempo sudah lewat ≥ 3 hari dari hari ini (hanya relevan bulan berjalan)
+          const bulanSekarang = new Date().getMonth() + 1;
+          const tahunSekarang = new Date().getFullYear();
+          mapped = mapped.filter((p) => {
+            if (p.statusBulanIni !== "BELUM_BAYAR") return false;
+            // Hanya hitung untuk bulan yang sedang berjalan atau lampau
+            if (tahun > tahunSekarang || (tahun === tahunSekarang && bulan > bulanSekarang)) return true; // bulan depan: semua dianggap masuk
+            if (tahun < tahunSekarang || (tahun === tahunSekarang && bulan < bulanSekarang)) return true; // bulan lampau: sudah pasti lewat
+            // Bulan berjalan: cek selisih hari
+            const selisih = todayDay - p.tanggalJatuhTempo;
+            return selisih >= 3;
+          });
+        } else if (filter === "bayar_hari_ini") {
+          // LUNAS dan tanggalBayarBulanIni = hari ini
+          mapped = mapped.filter((p) => {
+            if (p.statusBulanIni !== "LUNAS") return false;
+            if (!p.tanggalBayarBulanIni) return false;
+            return p.tanggalBayarBulanIni.slice(0, 10) === todayStr;
+          });
+        }
       }
 
       // Filter tanggal bayar — cari pelanggan yang bayar pada tanggal tertentu
