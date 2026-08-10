@@ -11,9 +11,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "WiFi RT/RW Net",
   description: "Sistem pencatatan pembayaran WiFi RT/RW Net",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.svg",
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "WiFi RT/RW",
   },
 };
@@ -21,7 +25,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#4338ca",
+  themeColor: "#0d1628",
 };
 
 export default function RootLayout({
