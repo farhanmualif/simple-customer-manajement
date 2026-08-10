@@ -1,20 +1,24 @@
 "use client";
 
-import { useEffect, useState, Suspense, useCallback } from "react";
+import { useEffect, useState, Suspense, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft, Phone, Wifi, Calendar, CheckCircle2, Clock,
   MessageCircle, WifiOff, Router, MapPin, Tag, Edit,
-  ChevronLeft, ChevronRight, Users, Save,
+  ChevronLeft, ChevronRight, Users, Save, Search, X, Pencil,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { AppShell } from "@/components/AppShell";
 import {
   formatRupiah, formatBulanTahun, formatTanggal,
   getBulanTahunSekarang, getNamaBulan, parsePeriodeQuery, geserBulan,
 } from "@/lib/utils";
-import type { PelangganDetail, StatusTagihan } from "@/lib/types";
+import type { PelangganDetail, PelangganListItem, StatusTagihan, PaketData } from "@/lib/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function statusVariant(s: StatusTagihan): "lunas" | "belumBayar" | "isolir" | "default" {
@@ -33,6 +37,329 @@ function StatusIcon({ s }: { s: StatusTagihan }) {
   return <Clock className="w-4 h-4 text-danger-600" />;
 }
 
+// ── Cari Pelanggan Dropdown ──────────────────────────────────────────────────
+function CariPelangganDropdown({
+  currentId, bulan, tahun, onNavigate,
+}: {
+  currentId: string; bulan: number; tahun: number; onNavigate: () => void;
+}) {
+  const router = useRouter();
+  const [query, setQuery]           = useState("");
+  const [results, setResults]       = useState<PelangganListItem[]>([]);
+  const [loading, setLoading]       = useState(false);
+  const [open, setOpen]             = useState(false);
+  const wrapperRef                  = useRef<HTMLDivElement>(null);
+  const debounceRef                 = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Tutup dropdown saat klik di luar
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Debounce search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!query.trim()) { setResults([]); setOpen(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const p = new URLSearchParams({ search: query, limit: "7", bulan: String(bulan), tahun: String(tahun) });
+        const res = await fetch(`/api/pelanggan?${p}`);
+        const json = await res.json();
+        const filtered = (json.data ?? []).filter((p: PelangganListItem) => p.id !== currentId);
+        setResults(filtered);
+        setOpen(true);
+      } catch { setResults([]); }
+      finally { setLoading(false); }
+    }, 350);
+  }, [query, bulan, tahun, currentId]);
+
+  const handleSelect = (pelanggan: PelangganListItem) => {
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+    onNavigate();
+    router.push(`/pelanggan/${pelanggan.id}?bulan=${bulan}&tahun=${tahun}`);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Cari pelanggan lain..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && (setOpen(false), setQuery(""))}
+          className="w-full h-11 rounded-xl border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300 shadow-sm transition-shadow"
+        />
+        {query && (
+          <button
+            onClick={() => { setQuery(""); setResults([]); setOpen(false); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
+            <X className="w-4 h-4 text-slate-400" />
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute z-50 mt-1.5 w-full bg-white rounded-2xl shadow-card-md border border-slate-100 overflow-hidden">
+          {loading ? (
+            <div className="p-3 space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-10 rounded-xl bg-slate-100 animate-pulse" />
+              ))}
+            </div>
+          ) : results.length === 0 ? (
+            <div className="py-6 text-center text-sm text-slate-400">Tidak ada hasil</div>
+          ) : (
+            <div className="py-1.5 max-h-72 overflow-y-auto">
+              {results.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handleSelect(p)}
+                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left"
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                    p.statusBulanIni === "LUNAS"  ? "bg-success-100 text-success-700" :
+                    p.statusBulanIni === "ISOLIR" ? "bg-slate-200 text-slate-500" :
+                                                    "bg-danger-100 text-danger-700"
+                  }`}>
+                    {p.nama.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-800 text-sm truncate">{p.nama}</p>
+                    <p className="text-xs text-slate-400 truncate">{p.alamat ?? p.paket.namaPaket}</p>
+                  </div>
+                  <Badge variant={statusVariant(p.statusBulanIni)} className="text-xs shrink-0">
+                    {statusLabel(p.statusBulanIni)}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Edit Pelanggan Form (inline di card info) ─────────────────────────────────
+interface EditFormState {
+  nama: string;
+  noWhatsapp: string;
+  alamat: string;
+  paketId: string;
+  tanggalJatuhTempo: string;
+  secretsPppoe: string;
+  blokArea: string;
+  keterangan: string;
+  ppn: boolean;
+  kupon: boolean;
+}
+
+function EditPelangganCard({
+  data, onSaved, onCancel,
+}: {
+  data: PelangganDetail; onSaved: () => void; onCancel: () => void;
+}) {
+  const [paketList, setPaketList]   = useState<PaketData[]>([]);
+  const [loadingPaket, setLoadingPaket] = useState(true);
+  const [saving, setSaving]         = useState(false);
+  const [err, setErr]               = useState("");
+  const [form, setForm]             = useState<EditFormState>({
+    nama:               data.nama,
+    noWhatsapp:         data.noWhatsapp ?? "",
+    alamat:             data.alamat ?? "",
+    paketId:            data.paket.id,
+    tanggalJatuhTempo:  String(data.tanggalJatuhTempo),
+    secretsPppoe:       data.secretsPppoe ?? "",
+    blokArea:           data.blokArea ?? "",
+    keterangan:         data.keterangan ?? "",
+    ppn:                data.ppn,
+    kupon:              data.kupon,
+  });
+
+  useEffect(() => {
+    fetch("/api/paket")
+      .then((r) => r.json())
+      .then((j) => setPaketList(j.data ?? []))
+      .finally(() => setLoadingPaket(false));
+  }, []);
+
+  const set = (key: keyof EditFormState, val: string | boolean) =>
+    setForm((f) => ({ ...f, [key]: val }));
+
+  const handleSimpan = async () => {
+    if (!form.nama.trim()) { setErr("Nama wajib diisi."); return; }
+    const tgl = parseInt(form.tanggalJatuhTempo, 10);
+    if (!tgl || tgl < 1 || tgl > 31) { setErr("Tanggal jatuh tempo harus antara 1–31."); return; }
+    if (!form.paketId) { setErr("Pilih paket terlebih dahulu."); return; }
+
+    setSaving(true); setErr("");
+    try {
+      const res = await fetch(`/api/pelanggan/${data.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama:              form.nama.trim(),
+          noWhatsapp:        form.noWhatsapp.trim() || null,
+          alamat:            form.alamat.trim() || null,
+          paketId:           form.paketId,
+          tanggalJatuhTempo: tgl,
+          secretsPppoe:      form.secretsPppoe.trim() || null,
+          blokArea:          form.blokArea.trim() || null,
+          keterangan:        form.keterangan.trim() || null,
+          ppn:               form.ppn,
+          kupon:             form.kupon,
+        }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "Gagal"); }
+      onSaved();
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Gagal menyimpan.");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+      {/* Header card edit */}
+      <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center shrink-0">
+          <Pencil className="w-5 h-5 text-brand-600" />
+        </div>
+        <div>
+          <p className="font-bold text-slate-800">Edit Pelanggan</p>
+          <p className="text-xs text-slate-400">Ubah data pelanggan</p>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-4">
+        {/* Nama */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-nama">Nama Pelanggan</Label>
+          <Input id="edit-nama" value={form.nama}
+            onChange={(e) => { set("nama", e.target.value); setErr(""); }} />
+        </div>
+
+        {/* No WhatsApp */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-wa">No. WhatsApp</Label>
+          <Input id="edit-wa" type="tel" inputMode="numeric" placeholder="08123456789"
+            value={form.noWhatsapp} onChange={(e) => set("noWhatsapp", e.target.value)} />
+        </div>
+
+        {/* Alamat */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-alamat">Alamat / Wilayah</Label>
+          <Input id="edit-alamat" placeholder="misal: Bogolan Tanjakan"
+            value={form.alamat} onChange={(e) => set("alamat", e.target.value)} />
+        </div>
+
+        {/* Paket */}
+        <div className="space-y-1.5">
+          <Label>Paket Internet</Label>
+          {loadingPaket ? (
+            <div className="h-12 bg-slate-100 rounded-xl animate-pulse" />
+          ) : (
+            <Select value={form.paketId} onValueChange={(v) => set("paketId", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih paket..." />
+              </SelectTrigger>
+              <SelectContent>
+                {paketList.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.namaPaket} · {formatRupiah(p.harga)}/bln
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {/* Tanggal Jatuh Tempo */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-tgl">Tanggal Jatuh Tempo <span className="text-slate-400 font-normal text-xs">(1–31)</span></Label>
+          <Input id="edit-tgl" type="number" inputMode="numeric" min={1} max={31}
+            value={form.tanggalJatuhTempo}
+            onChange={(e) => { set("tanggalJatuhTempo", e.target.value); setErr(""); }} />
+        </div>
+
+        {/* Secrets PPPoE */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-pppoe">Secrets PPPoE</Label>
+          <Input id="edit-pppoe" className="font-mono" placeholder="misal: BUDI@BOGOLAN"
+            value={form.secretsPppoe} onChange={(e) => set("secretsPppoe", e.target.value)} />
+        </div>
+
+        {/* Blok Area */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-blok">Blok Area / ODP</Label>
+          <Input id="edit-blok" placeholder="misal: odp rt darso"
+            value={form.blokArea} onChange={(e) => set("blokArea", e.target.value)} />
+        </div>
+
+        {/* Keterangan */}
+        <div className="space-y-1.5">
+          <Label htmlFor="edit-ket">Keterangan</Label>
+          <Input id="edit-ket" placeholder="misal: aktif 14 juli, cdata, tplink"
+            value={form.keterangan} onChange={(e) => set("keterangan", e.target.value)} />
+        </div>
+
+        {/* PPN & Kupon */}
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" checked={form.ppn}
+              onChange={(e) => set("ppn", e.target.checked)}
+              className="w-4 h-4 rounded accent-brand-600" />
+            <span className="text-sm font-medium text-slate-700">Kena PPN</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" checked={form.kupon}
+              onChange={(e) => set("kupon", e.target.checked)}
+              className="w-4 h-4 rounded accent-brand-600" />
+            <span className="text-sm font-medium text-slate-700">Ada Kupon</span>
+          </label>
+        </div>
+
+        {err && (
+          <p className="text-danger-600 text-sm font-medium bg-danger-50 rounded-xl px-4 py-2.5">{err}</p>
+        )}
+
+        {/* Tombol aksi */}
+        <div className="flex gap-3 pt-1">
+          <button
+            onClick={onCancel}
+            disabled={saving}
+            className="flex-1 h-11 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 disabled:opacity-50 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleSimpan}
+            disabled={saving}
+            className="flex-1 h-11 rounded-xl bg-brand-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-700 disabled:opacity-60 shadow-card transition-colors"
+          >
+            {saving
+              ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menyimpan...</>
+              : <><Save className="w-4 h-4" /> Simpan</>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Inline Tagihan Form ───────────────────────────────────────────────────────
 function TagihanForm({
   pelangganId, bulan, tahun, hargaPaket,
@@ -44,8 +371,6 @@ function TagihanForm({
   onSaved: () => void;
 }) {
   const now = getBulanTahunSekarang();
-
-  // State periode tagihan — bebas pilih bulan manapun
   const [periodeTagihan, setPeriodeTagihan] = useState({ bulan, tahun });
   const isBulanDepan =
     periodeTagihan.tahun > now.tahun ||
@@ -58,7 +383,6 @@ function TagihanForm({
   const [err, setErr]         = useState("");
   const [ok, setOk]           = useState(false);
 
-  // Reset form saat data berubah (ganti bulan/pelanggan)
   useEffect(() => {
     setPeriodeTagihan({ bulan, tahun });
     setStatus(currentStatus);
@@ -106,17 +430,13 @@ function TagihanForm({
         <p className="font-bold text-slate-800">Update Tagihan</p>
         <p className="text-xs text-slate-400 mt-0.5">Pilih bulan &amp; status pembayaran</p>
       </div>
-
       <div className="p-5 space-y-4">
-        {/* ── Pilih bulan tagihan ── */}
+        {/* Pilih bulan tagihan */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold text-slate-700">Bulan Tagihan</label>
           <div className="flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-2.5">
             <button
-              onClick={() => {
-                const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, -1);
-                setPeriodeTagihan(p); setOk(false);
-              }}
+              onClick={() => { const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, -1); setPeriodeTagihan(p); setOk(false); }}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -125,10 +445,7 @@ function TagihanForm({
               {formatBulanTahun(periodeTagihan.bulan, periodeTagihan.tahun)}
             </span>
             <button
-              onClick={() => {
-                const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, 1);
-                setPeriodeTagihan(p); setOk(false);
-              }}
+              onClick={() => { const p = geserBulan(periodeTagihan.bulan, periodeTagihan.tahun, 1); setPeriodeTagihan(p); setOk(false); }}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
@@ -140,7 +457,7 @@ function TagihanForm({
             </p>
           )}
         </div>
-        {/* ── Dropdown status ── */}
+        {/* Status */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold text-slate-700">Status</label>
           <select
@@ -154,65 +471,40 @@ function TagihanForm({
             <option value="ISOLIR">🔴  Isolir</option>
           </select>
         </div>
-
-        {/* ── Nominal — hanya kalau LUNAS ── */}
+        {/* Nominal */}
         {status === "LUNAS" && (
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">
-              Nominal Bayar
-            </label>
+            <label className="text-sm font-semibold text-slate-700">Nominal Bayar</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-sm pointer-events-none">
-                Rp
-              </span>
-              <Input
-                type="number"
-                inputMode="numeric"
-                className="pl-10 text-base font-semibold"
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-sm pointer-events-none">Rp</span>
+              <Input type="number" inputMode="numeric" className="pl-10 text-base font-semibold"
                 value={nominal}
                 onChange={(e) => { setNominal(e.target.value.replace(/\D/g, "")); setErr(""); }}
-                placeholder={String(hargaPaket)}
-              />
+                placeholder={String(hargaPaket)} />
             </div>
             {parseInt(nominal, 10) !== hargaPaket && parseInt(nominal, 10) > 0 && (
-              <p className="text-xs text-warning-600 font-medium">
-                ⚠ Berbeda dari harga paket ({formatRupiah(hargaPaket)})
-              </p>
+              <p className="text-xs text-warning-600 font-medium">⚠ Berbeda dari harga paket ({formatRupiah(hargaPaket)})</p>
             )}
           </div>
         )}
-
-        {/* ── Catatan opsional ── */}
+        {/* Catatan */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold text-slate-700">
             Catatan <span className="font-normal text-slate-400 text-xs">(opsional)</span>
           </label>
-          <Input
-            type="text"
-            placeholder="misal: diskon, cicilan, keterangan"
-            value={catatan}
-            onChange={(e) => { setCatatan(e.target.value); setOk(false); }}
-          />
+          <Input type="text" placeholder="misal: diskon, cicilan, keterangan"
+            value={catatan} onChange={(e) => { setCatatan(e.target.value); setOk(false); }} />
         </div>
-
-        {/* Feedback */}
-        {err && (
-          <p className="text-danger-600 text-sm font-medium bg-danger-50 rounded-xl px-4 py-2.5">
-            {err}
-          </p>
-        )}
+        {err && <p className="text-danger-600 text-sm font-medium bg-danger-50 rounded-xl px-4 py-2.5">{err}</p>}
         {ok && (
           <p className="text-success-700 text-sm font-medium bg-success-50 rounded-xl px-4 py-2.5 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" /> Tersimpan!
           </p>
         )}
-
-        {/* ── Tombol Simpan ── */}
         <button
           onClick={handleSimpan}
           disabled={saving || (!changed && !ok)}
-          className="w-full h-13 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40
-            bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98] shadow-card"
+          className="w-full h-13 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98] shadow-card"
         >
           {saving
             ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menyimpan...</>
@@ -224,17 +516,106 @@ function TagihanForm({
   );
 }
 
+// ── Info Pelanggan Card (mode tampil) ─────────────────────────────────────────
+function InfoPelangganCard({
+  data, currentStatus, onEdit,
+}: {
+  data: PelangganDetail; currentStatus: StatusTagihan; onEdit: () => void;
+}) {
+  const openWhatsApp = () => {
+    const no = data.noWhatsapp?.replace(/\D/g, "").replace(/^0/, "62") ?? "";
+    if (no) window.open(`https://wa.me/${no}`, "_blank");
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+      <div className="p-5 border-b border-slate-100 flex items-center gap-3">
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0 ${
+          currentStatus === "LUNAS"  ? "bg-success-100 text-success-700" :
+          currentStatus === "ISOLIR" ? "bg-slate-200 text-slate-500" :
+                                       "bg-danger-100 text-danger-700"
+        }`}>
+          {data.nama.charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-slate-800 text-lg leading-tight truncate">{data.nama}</p>
+          {data.nomorUrut && <p className="text-xs text-slate-400">No. {data.nomorUrut}</p>}
+        </div>
+        {/* Tombol Edit */}
+        <button
+          onClick={onEdit}
+          className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors shrink-0"
+          title="Edit pelanggan"
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="p-5 space-y-3">
+        {data.noWhatsapp && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Phone className="w-4 h-4 text-slate-500" /></div>
+            <div className="flex-1"><p className="text-xs text-slate-400">No. WhatsApp</p><p className="font-semibold text-slate-800 text-sm">{data.noWhatsapp}</p></div>
+            <button onClick={openWhatsApp} className="w-9 h-9 rounded-xl bg-success-100 flex items-center justify-center hover:bg-success-200 transition-colors">
+              <MessageCircle className="w-4 h-4 text-success-600" />
+            </button>
+          </div>
+        )}
+        {data.alamat && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><MapPin className="w-4 h-4 text-slate-500" /></div>
+            <div><p className="text-xs text-slate-400">Alamat</p><p className="font-semibold text-slate-800 text-sm">{data.alamat}</p></div>
+          </div>
+        )}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Wifi className="w-4 h-4 text-slate-500" /></div>
+          <div><p className="text-xs text-slate-400">Paket</p><p className="font-semibold text-slate-800 text-sm">{data.paket.namaPaket} <span className="text-brand-600">· {formatRupiah(data.paket.harga)}/bln</span></p></div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Calendar className="w-4 h-4 text-slate-500" /></div>
+          <div><p className="text-xs text-slate-400">Jatuh Tempo</p><p className="font-semibold text-slate-800 text-sm">Tanggal {data.tanggalJatuhTempo} tiap bulan</p></div>
+        </div>
+        {data.secretsPppoe && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Router className="w-4 h-4 text-slate-500" /></div>
+            <div><p className="text-xs text-slate-400">Secrets PPPoE</p><p className="font-semibold text-slate-800 text-sm font-mono">{data.secretsPppoe}</p></div>
+          </div>
+        )}
+        {data.blokArea && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Tag className="w-4 h-4 text-slate-500" /></div>
+            <div><p className="text-xs text-slate-400">Blok Area / ODP</p><p className="font-semibold text-slate-800 text-sm">{data.blokArea}</p></div>
+          </div>
+        )}
+        {data.keterangan && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Edit className="w-4 h-4 text-slate-500" /></div>
+            <div><p className="text-xs text-slate-400">Keterangan</p><p className="font-semibold text-slate-800 text-sm">{data.keterangan}</p></div>
+          </div>
+        )}
+        {(data.ppn || data.kupon) && (
+          <div className="flex gap-2 pt-1">
+            {data.ppn   && <span className="text-xs bg-warning-100 text-warning-700 font-semibold px-2 py-1 rounded-lg">PPN</span>}
+            {data.kupon && <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-2 py-1 rounded-lg">Kupon</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Detail page inner ────────────────────────────────────────────────────────
 function DetailContent({ id }: { id: string }) {
-  const router = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
   const [periode, setPeriode] = useState(() =>
     parsePeriodeQuery(searchParams.get("bulan"), searchParams.get("tahun"))
   );
 
-  const [data, setData] = useState<PelangganDetail | null>(null);
+  const [data, setData]       = useState<PelangganDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError]     = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editOk, setEditOk]       = useState(false);
 
   const fetchData = useCallback(async (b: number, t: number) => {
     setLoading(true); setError("");
@@ -254,11 +635,17 @@ function DetailContent({ id }: { id: string }) {
     router.replace(`/pelanggan/${id}?bulan=${b}&tahun=${t}`, { scroll: false });
   };
 
-  const now = getBulanTahunSekarang();
-  const isSekarang = periode.bulan === now.bulan && periode.tahun === now.tahun;
-  const currentStatus = data?.statusBulanIni ?? "BELUM_BAYAR";
+  const handleEditSaved = async () => {
+    setIsEditing(false);
+    setEditOk(true);
+    await fetchData(periode.bulan, periode.tahun);
+    setTimeout(() => setEditOk(false), 3000);
+  };
 
-  // Periode nav — shared antara sub-bar mobile dan header desktop
+  const now = getBulanTahunSekarang();
+  const isSekarang      = periode.bulan === now.bulan && periode.tahun === now.tahun;
+  const currentStatus   = data?.statusBulanIni ?? "BELUM_BAYAR";
+
   const periodeNav = (
     <div className="flex items-center gap-1 bg-white/15 lg:bg-slate-100 rounded-xl px-2 py-1">
       <button
@@ -279,16 +666,12 @@ function DetailContent({ id }: { id: string }) {
     </div>
   );
 
-  // Mobile header: hanya back button (ringkas)
-  // Desktop header: periode nav + badge + back button
   const headerRight = (
     <div className="flex items-center gap-2">
-      {/* Desktop only */}
       <div className="hidden lg:flex items-center gap-2">
         {periodeNav}
         {data && <Badge variant={statusVariant(currentStatus)}>{statusLabel(currentStatus)}</Badge>}
       </div>
-      {/* Semua ukuran */}
       <button
         onClick={() => router.push("/pelanggan")}
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 lg:bg-slate-100 text-white lg:text-slate-600 text-sm font-medium hover:bg-slate-200 active:bg-white/30 transition-colors"
@@ -320,11 +703,6 @@ function DetailContent({ id }: { id: string }) {
     </AppShell>
   );
 
-  const openWhatsApp = () => {
-    const no = data.noWhatsapp?.replace(/\D/g, "").replace(/^0/, "62") ?? "";
-    if (no) window.open(`https://wa.me/${no}`, "_blank");
-  };
-
   const currentCatatan = data.riwayatTagihan.find(
     (t) => t.bulan === periode.bulan && t.tahun === periode.tahun
   )?.catatan ?? null;
@@ -340,94 +718,53 @@ function DetailContent({ id }: { id: string }) {
         className="lg:hidden px-3 py-2.5 flex items-center gap-2"
         style={{ background: "linear-gradient(135deg, #0B1120 0%, #11244C 60%, #1a3a7a 100%)" }}
       >
-        {/* Periode nav — compact */}
         {periodeNav}
-        {/* Spacer */}
         <div className="flex-1" />
-        {/* Badge status */}
         {data && (
           <Badge variant={statusVariant(currentStatus)} className="shrink-0 whitespace-nowrap">
             {statusLabel(currentStatus)}
           </Badge>
         )}
-        {!isSekarang && (
-          <span className="text-xs text-blue-300 shrink-0">📅</span>
-        )}
+        {!isSekarang && <span className="text-xs text-blue-300 shrink-0">📅</span>}
       </div>
 
       <div className="p-4 lg:p-8 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-          {/* ── Kiri: Info Pelanggan + Form Tagihan ── */}
+          {/* ── Kiri: Search + Info + Form Tagihan ── */}
           <div className="lg:col-span-1 space-y-4">
 
-            {/* Info Card */}
-            <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0 ${
-                  currentStatus === "LUNAS"  ? "bg-success-100 text-success-700" :
-                  currentStatus === "ISOLIR" ? "bg-slate-200 text-slate-500" :
-                                               "bg-danger-100 text-danger-700"
-                }`}>
-                  {data.nama.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-bold text-slate-800 text-lg leading-tight">{data.nama}</p>
-                  {data.nomorUrut && <p className="text-xs text-slate-400">No. {data.nomorUrut}</p>}
-                </div>
-              </div>
-              <div className="p-5 space-y-3">
-                {data.noWhatsapp && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Phone className="w-4 h-4 text-slate-500" /></div>
-                    <div className="flex-1"><p className="text-xs text-slate-400">No. WhatsApp</p><p className="font-semibold text-slate-800 text-sm">{data.noWhatsapp}</p></div>
-                    <button onClick={openWhatsApp} className="w-9 h-9 rounded-xl bg-success-100 flex items-center justify-center hover:bg-success-200 transition-colors">
-                      <MessageCircle className="w-4 h-4 text-success-600" />
-                    </button>
-                  </div>
-                )}
-                {data.alamat && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><MapPin className="w-4 h-4 text-slate-500" /></div>
-                    <div><p className="text-xs text-slate-400">Alamat</p><p className="font-semibold text-slate-800 text-sm">{data.alamat}</p></div>
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Wifi className="w-4 h-4 text-slate-500" /></div>
-                  <div><p className="text-xs text-slate-400">Paket</p><p className="font-semibold text-slate-800 text-sm">{data.paket.namaPaket} <span className="text-brand-600">· {formatRupiah(data.paket.harga)}/bln</span></p></div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Calendar className="w-4 h-4 text-slate-500" /></div>
-                  <div><p className="text-xs text-slate-400">Jatuh Tempo</p><p className="font-semibold text-slate-800 text-sm">Tanggal {data.tanggalJatuhTempo} tiap bulan</p></div>
-                </div>
-                {data.secretsPppoe && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Router className="w-4 h-4 text-slate-500" /></div>
-                    <div><p className="text-xs text-slate-400">Secrets PPPoE</p><p className="font-semibold text-slate-800 text-sm font-mono">{data.secretsPppoe}</p></div>
-                  </div>
-                )}
-                {data.blokArea && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Tag className="w-4 h-4 text-slate-500" /></div>
-                    <div><p className="text-xs text-slate-400">Blok Area / ODP</p><p className="font-semibold text-slate-800 text-sm">{data.blokArea}</p></div>
-                  </div>
-                )}
-                {data.keterangan && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0"><Edit className="w-4 h-4 text-slate-500" /></div>
-                    <div><p className="text-xs text-slate-400">Keterangan</p><p className="font-semibold text-slate-800 text-sm">{data.keterangan}</p></div>
-                  </div>
-                )}
-                {(data.ppn || data.kupon) && (
-                  <div className="flex gap-2 pt-1">
-                    {data.ppn   && <span className="text-xs bg-warning-100 text-warning-700 font-semibold px-2 py-1 rounded-lg">PPN</span>}
-                    {data.kupon && <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-2 py-1 rounded-lg">Kupon</span>}
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Search cari pelanggan lain */}
+            <CariPelangganDropdown
+              currentId={id}
+              bulan={periode.bulan}
+              tahun={periode.tahun}
+              onNavigate={() => setIsEditing(false)}
+            />
 
-            {/* ── Form Tagihan — inline, tanpa dialog ── */}
+            {/* Feedback edit berhasil */}
+            {editOk && (
+              <div className="flex items-center gap-2 bg-success-50 text-success-700 text-sm font-medium px-4 py-2.5 rounded-xl border border-success-200">
+                <CheckCircle2 className="w-4 h-4 shrink-0" /> Data pelanggan berhasil diperbarui
+              </div>
+            )}
+
+            {/* Info card — mode tampil atau edit */}
+            {isEditing ? (
+              <EditPelangganCard
+                data={data}
+                onSaved={handleEditSaved}
+                onCancel={() => setIsEditing(false)}
+              />
+            ) : (
+              <InfoPelangganCard
+                data={data}
+                currentStatus={currentStatus}
+                onEdit={() => setIsEditing(true)}
+              />
+            )}
+
+            {/* Form Tagihan */}
             <TagihanForm
               pelangganId={data.id}
               bulan={periode.bulan}
@@ -455,7 +792,6 @@ function DetailContent({ id }: { id: string }) {
                 </div>
               ) : (
                 <div>
-                  {/* Desktop table header */}
                   <div className="hidden lg:grid grid-cols-5 gap-3 px-5 py-3 bg-slate-50 text-xs font-semibold text-slate-400 uppercase tracking-wide">
                     <span>Periode</span><span>Tagihan</span><span>Dibayar</span><span>Tgl Bayar</span><span>Status</span>
                   </div>
