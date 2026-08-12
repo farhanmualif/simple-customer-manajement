@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "WiFi RT/RW Net",
-  description: "Sistem pencatatan pembayaran WiFi RT/RW Net",
+  title: "POP - Bodeh",
+  description: "Sistem pencatatan pembayaran POP - Bodeh",
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.svg",

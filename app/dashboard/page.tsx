@@ -13,13 +13,15 @@ import {
 } from "@/lib/utils";
 import type { DashboardData, PelangganListItem } from "@/lib/types";
 
-/* ── Shared style ── */
+/* ── Shared style ──
+   Sebelumnya "glass" (transparan + blur). Diubah jadi solid dark navy
+   biar konsisten dengan 3 card status (Perkiraan/Sudah/Belum Masuk)
+   di Row 1 yang juga solid. */
 const glassCard: React.CSSProperties = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: "#141C33",
+  border: "1px solid rgba(255,255,255,0.10)",
   borderRadius: "1rem",
+  boxShadow: "0 8px 20px -6px rgba(0,0,0,0.35)",
 };
 
 /* ── Skeleton Card ── */
@@ -27,7 +29,7 @@ function SkeletonCard({ h = "h-32" }: { h?: string }) {
   return (
     <div
       className={`rounded-2xl animate-pulse ${h}`}
-      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.10)" }}
+      style={{ background: "#141C33", border: "1px solid rgba(255,255,255,0.10)" }}
     />
   );
 }
@@ -36,7 +38,7 @@ function SkeletonCard({ h = "h-32" }: { h?: string }) {
 function SkeletonTabel({ warna }: { warna: "merah" | "hijau" }) {
   const line = warna === "merah" ? "bg-yellow-100/20" : "bg-green-400/20";
   return (
-    <div className="rounded-2xl animate-pulse p-6" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.10)" }}>
+    <div className="rounded-2xl animate-pulse p-6" style={{ background: "#141C33", border: "1px solid rgba(255,255,255,0.10)" }}>
       <div className="flex justify-between items-center mb-5">
         <div className={`h-5 ${line} rounded w-36`} />
         <div className={`h-5 ${line} rounded w-16`} />
@@ -447,7 +449,8 @@ function DashboardContent() {
               <div className="text-sm font-medium text-orange-100">
                 {data?.jumlahBelumBayar ?? 0} belum bayar · {data?.jumlahIsolir ?? 0} isolir
               </div>
-              <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none" />
+              <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-black/10 pointer-events-none" />
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full bg-black/10 pointer-events-none" />
             </div>
           )}
         </div>
@@ -540,9 +543,9 @@ function DashboardContent() {
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=belum_bayar`)}
                   className="rounded-2xl p-5 flex flex-col justify-between text-left transition-all active:scale-[0.98] hover:border-orange-300/30"
-                  style={{ ...glassCard, background: "rgba(251,144,50,0.08)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(251,144,50,0.15)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(251,144,50,0.08)")}
+                  style={{ ...glassCard, background: "rgba(251,144,50,0.12)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(251,144,50,0.20)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(251,144,50,0.12)")}
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
@@ -562,8 +565,8 @@ function DashboardContent() {
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}`)}
                   className="rounded-2xl p-5 flex flex-col justify-between text-left transition-all active:scale-[0.98]"
                   style={glassCard}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#1B2545")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "#141C33")}
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"

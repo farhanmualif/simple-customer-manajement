@@ -92,11 +92,11 @@ function statusCardStyle(s: StatusTagihan): {
   };
   // ISOLIR
   return {
-    cardBg:     "rgba(107, 114, 128, 0.15)",
-    border:     "rgba(107, 114, 128, 0.30)",
-    strip:      "#6B7280",
-    avatarBg:   "rgba(107, 114, 128, 0.25)",
-    avatarText: "#cbd5e1",
+    cardBg:     "rgba(251, 130, 50, 0.57)",
+    border:     "rgba(251, 144, 50, 0.84)",
+    strip:      "#ff7701",
+    avatarBg:   "rgba(251, 144, 50, 0.77)",
+    avatarText: "#ffffff",
   };
 }
 
@@ -290,72 +290,87 @@ function PelangganListContent() {
         </div>
 
         {/* ── Filter bar — 1 baris horizontal di desktop, kolom di mobile ── */}
-        <div className="px-3 pt-3 pb-2 space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-3 lg:pt-4 lg:pb-3 lg:border-b lg:border-white/10">
+        <div className="px-3 pt-3 pb-2 space-y-3 lg:space-y-0 lg:flex lg:items-start lg:gap-3 lg:pt-4 lg:pb-3 lg:border-b lg:border-white/10">
 
           {/* Search */}
-          <div className="relative lg:flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none" />
-            <input
-              type="search"
-              placeholder="Cari nama pelanggan..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-10 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
-              style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)" }}
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-blue-200/50" />
-              </button>
-            )}
+          <div className="lg:flex-1">
+            <label className="block text-xs font-semibold text-blue-200/70 mb-1.5 px-0.5">
+              Cari Pelanggan
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none z-10" />
+              <input
+                type="search"
+                placeholder="Nama pelanggan..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-10 text-sm text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow"
+                style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)" }}
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
+                  <X className="w-4 h-4 text-blue-200/50" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Filter tanggal bayar */}
-          <div className="relative lg:w-52">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none z-10" />
-            <input
-              type="date"
-              value={tanggalBayar}
-              onChange={(e) => setTanggalBayar(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow appearance-none"
-              style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)", colorScheme: "dark" }}
-            />
-            {!tanggalBayar && (
-              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-blue-200/40 pointer-events-none">
-                Tgl bayar...
-              </span>
-            )}
-            {tanggalBayar && (
-              <button onClick={() => setTanggalBayar("")} className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
-                <X className="w-4 h-4 text-blue-200/50" />
-              </button>
-            )}
+          <div className="lg:w-52">
+            <label className="block text-xs font-semibold text-blue-200/70 mb-1.5 px-0.5">
+              Tanggal Bayar
+            </label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none z-10" />
+              <input
+                type="date"
+                value={tanggalBayar}
+                onChange={(e) => setTanggalBayar(e.target.value)}
+                className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow appearance-none"
+                style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)", colorScheme: "dark" }}
+              />
+             {!tanggalBayar && (
+                <span className="lg:hidden absolute left-10 top-1/2 -translate-y-1/2 text-sm text-blue-200/40 pointer-events-none">
+                  mm/dd/yyyy
+                </span>
+              )}
+              {tanggalBayar && (
+                <button onClick={() => setTanggalBayar("")} className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+                  <X className="w-4 h-4 text-blue-200/50" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Filter jatuh tempo */}
-          <div className="relative lg:w-52">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none" />
-            <select
-              value={jatuhTempo}
-              onChange={(e) => setJatuhTempo(e.target.value)}
-              className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow appearance-none"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                backdropFilter: "blur(8px)",
-                color: jatuhTempo ? "#ffffff" : "rgba(147,197,253,0.4)",
-                colorScheme: "dark",
-              }}
-            >
-              <option value="">Jatuh tempo...</option>
-              {Array.from({ length: 28 }, (_, i) => i + 1).map((tgl) => (
-                <option key={tgl} value={String(tgl)} style={{ background: "#11244C", color: "#ffffff" }}>Tgl {tgl}</option>
-              ))}
-            </select>
-            {jatuhTempo && (
-              <button onClick={() => setJatuhTempo("")} className="absolute right-2 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-blue-200/50" />
-              </button>
-            )}
+          <div className="lg:w-52">
+            <label className="block text-xs font-semibold text-blue-200/70 mb-1.5 px-0.5">
+              Jatuh Tempo
+            </label>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-200/60 pointer-events-none z-10" />
+              <select
+                value={jatuhTempo}
+                onChange={(e) => setJatuhTempo(e.target.value)}
+                className="w-full h-11 rounded-xl border border-white/15 pl-10 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-shadow appearance-none"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(8px)",
+                  color: jatuhTempo ? "#ffffff" : "rgba(147,197,253,0.4)",
+                  colorScheme: "dark",
+                }}
+              >
+                <option value="">Semua tanggal</option>
+                {Array.from({ length: 28 }, (_, i) => i + 1).map((tgl) => (
+                  <option key={tgl} value={String(tgl)} style={{ background: "#11244C", color: "#ffffff" }}>Tgl {tgl}</option>
+                ))}
+              </select>
+              {jatuhTempo && (
+                <button onClick={() => setJatuhTempo("")} className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+                  <X className="w-4 h-4 text-blue-200/50" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

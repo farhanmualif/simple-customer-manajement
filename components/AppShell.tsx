@@ -74,7 +74,7 @@ function Sidebar({ onLogout, loggingOut }: { onLogout: () => void; loggingOut: b
           <Wifi className="w-6 h-6 text-white" strokeWidth={2} />
         </div>
         <div>
-          <h1 className="font-bold text-lg text-white leading-tight">WiFi RT/RW Net</h1>
+          <h1 className="font-bold text-lg text-white leading-tight">POP - BODEH</h1>
           <p className="text-xs text-blue-200">Pencatatan Pembayaran</p>
         </div>
       </div>
