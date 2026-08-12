@@ -862,7 +862,7 @@ function DetailContent({ id }: { id: string }) {
       <div className="p-4 lg:p-8 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-          {/* ── Kiri: Search + Info + Form Tagihan ── */}
+          {/* ── Kiri: Search + Form Tagihan ── */}
           <div className="lg:col-span-1 space-y-4">
 
             {/* Search cari pelanggan lain */}
@@ -872,6 +872,22 @@ function DetailContent({ id }: { id: string }) {
               tahun={periode.tahun}
               onNavigate={() => setIsEditing(false)}
             />
+
+            {/* Form Tagihan */}
+            <TagihanForm
+              pelangganId={data.id}
+              bulan={periode.bulan}
+              tahun={periode.tahun}
+              hargaPaket={data.paket.harga}
+              currentStatus={currentStatus}
+              currentNominal={data.nominalBayarBulanIni}
+              currentCatatan={currentCatatan}
+              onSaved={() => fetchData(periode.bulan, periode.tahun)}
+            />
+          </div>
+
+          {/* ── Kanan: Info Pelanggan / Edit Pelanggan ── */}
+          <div className="lg:col-span-2 space-y-4">
 
             {/* Feedback edit berhasil */}
             {editOk && (
@@ -897,22 +913,10 @@ function DetailContent({ id }: { id: string }) {
                 onEdit={() => setIsEditing(true)}
               />
             )}
-
-            {/* Form Tagihan */}
-            <TagihanForm
-              pelangganId={data.id}
-              bulan={periode.bulan}
-              tahun={periode.tahun}
-              hargaPaket={data.paket.harga}
-              currentStatus={currentStatus}
-              currentNominal={data.nominalBayarBulanIni}
-              currentCatatan={currentCatatan}
-              onSaved={() => fetchData(periode.bulan, periode.tahun)}
-            />
           </div>
 
-          {/* ── Kanan: Riwayat Tagihan ── */}
-          <div className="lg:col-span-2">
+          {/* ── Bawah: Riwayat Tagihan (full width) ── */}
+          <div className="lg:col-span-3">
             <div className="rounded-2xl overflow-hidden" style={glassCard}>
               <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-white/10">
                 <p className="font-bold text-white">Riwayat Tagihan</p>

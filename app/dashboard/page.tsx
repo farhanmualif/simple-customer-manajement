@@ -34,7 +34,7 @@ function SkeletonCard({ h = "h-32" }: { h?: string }) {
 
 /* ── Skeleton Tabel ── */
 function SkeletonTabel({ warna }: { warna: "merah" | "hijau" }) {
-  const line = warna === "merah" ? "bg-red-400/20" : "bg-green-400/20";
+  const line = warna === "merah" ? "bg-yellow-100/20" : "bg-green-400/20";
   return (
     <div className="rounded-2xl animate-pulse p-6" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.10)" }}>
       <div className="flex justify-between items-center mb-5">
@@ -116,7 +116,7 @@ function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
         </div>
         <span
           className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
-          style={{ background: "rgba(227,51,51,0.2)", color: "#f88" }}
+          style={{ background: "rgba(245,230,199,0.2)", color: "#e8d5b0" }}
         >
           {list.length} pelanggan
         </span>
@@ -143,13 +143,13 @@ function TabelBelumBayar({ bulan, tahun, refreshKey, isLoading }: { bulan: numbe
                 key={p.id}
                 className="border-b border-white/5 last:border-0 transition-colors"
                 style={{ background: "transparent" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.08)")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,230,199,0.08)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
                 <td className="px-6 py-3 font-medium text-white text-sm">{p.nama}</td>
                 <td className="px-6 py-3 text-blue-100/70 text-sm">{formatRupiah(p.paket.harga)}</td>
                 <td className="px-6 py-3 text-sm">
-                  <span className="font-semibold" style={{ color: "#f88" }}>Tgl {p.tanggalJatuhTempo}</span>
+                  <span className="font-semibold" style={{ color: "#e8d5b0" }}>Tgl {p.tanggalJatuhTempo}</span>
                 </td>
                 <td className="px-6 py-3 text-right">
                   <button
@@ -434,21 +434,21 @@ function DashboardContent() {
           {/* Belum Masuk */}
           {loading ? <SkeletonCard h="h-36" /> : (
             <div className="rounded-2xl p-6 relative overflow-hidden" style={{
-              background: "rgba(227,51,51,0.12)",
+              background: "rgba(245,230,199,0.10)",
               backdropFilter: "blur(12px)",
-              border: "1px solid rgba(227,51,51,0.25)",
+              border: "1px solid rgba(245,230,199,0.20)",
             }}>
-              <div className="flex items-center gap-2 mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "#f88" }}>
+              <div className="flex items-center gap-2 mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "#e8d5b0" }}>
                 <Clock className="w-4 h-4" />
                 <span>Belum Masuk</span>
               </div>
               <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
                 {formatRupiah(data?.totalBelumMasuk ?? 0)}
               </div>
-              <div className="text-sm font-medium" style={{ color: "#f88" }}>
+              <div className="text-sm font-medium" style={{ color: "#e8d5b0" }}>
                 {data?.jumlahBelumBayar ?? 0} belum bayar · {data?.jumlahIsolir ?? 0} isolir
               </div>
-              <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full pointer-events-none" style={{ background: "rgba(227,51,51,0.15)" }} />
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full pointer-events-none" style={{ background: "rgba(245,230,199,0.10)" }} />
             </div>
           )}
         </div>
@@ -506,12 +506,12 @@ function DashboardContent() {
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=belum_bayar`)}
                   className="rounded-xl p-3 lg:p-4 text-center transition-all active:scale-95"
-                  style={{ background: "rgba(227,51,51,0.15)", border: "1px solid rgba(227,51,51,0.25)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.25)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.15)")}
+                  style={{ background: "rgba(245,230,199,0.12)", border: "1px solid rgba(245,230,199,0.20)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,230,199,0.22)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(245,230,199,0.12)")}
                 >
-                  <div className="text-2xl lg:text-4xl font-bold mb-1" style={{ color: "#f88" }}>{data!.jumlahBelumBayar}</div>
-                  <div className="flex justify-center items-center gap-1 text-xs lg:text-sm font-medium leading-tight" style={{ color: "#f88" }}>
+                  <div className="text-2xl lg:text-4xl font-bold mb-1" style={{ color: "#e8d5b0" }}>{data!.jumlahBelumBayar}</div>
+                  <div className="flex justify-center items-center gap-1 text-xs lg:text-sm font-medium leading-tight" style={{ color: "#e8d5b0" }}>
                     <Clock className="w-3 h-3 shrink-0" /><span>Belum Bayar</span>
                   </div>
                 </button>
@@ -540,16 +540,16 @@ function DashboardContent() {
               <>
                 <button
                   onClick={() => router.push(`/pelanggan?bulan=${data!.bulan}&tahun=${data!.tahun}&filter=belum_bayar`)}
-                  className="rounded-2xl p-5 flex flex-col justify-between text-left transition-all active:scale-[0.98] hover:border-red-400/40"
-                  style={{ ...glassCard, background: "rgba(227,51,51,0.10)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.18)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.10)")}
+                  className="rounded-2xl p-5 flex flex-col justify-between text-left transition-all active:scale-[0.98] hover:border-yellow-100/30"
+                  style={{ ...glassCard, background: "rgba(245,230,199,0.08)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,230,199,0.15)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(245,230,199,0.08)")}
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                    style={{ background: "rgba(227,51,51,0.25)" }}
+                    style={{ background: "rgba(245,230,199,0.20)" }}
                   >
-                    <Clock className="w-5 h-5" style={{ color: "#f88" }} />
+                    <Clock className="w-5 h-5" style={{ color: "#e8d5b0" }} />
                   </div>
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">
