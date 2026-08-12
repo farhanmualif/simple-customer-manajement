@@ -75,7 +75,7 @@ export default function TambahPelangganPage() {
       });
       const json = await res.json();
       if (!res.ok) { setGlobalError(json.error ?? "Gagal menyimpan."); return; }
-      router.replace("/pelanggan");
+      router.replace(`/pelanggan?added=${encodeURIComponent(nama.trim())}`);
     } catch { setGlobalError("Tidak bisa terhubung. Coba lagi."); }
     finally { setSaving(false); }
   };

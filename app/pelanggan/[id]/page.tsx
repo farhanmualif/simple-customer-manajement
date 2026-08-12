@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState, Suspense, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import {
   ArrowLeft, Phone, Wifi, Calendar, CheckCircle2, Clock,
   MessageCircle, WifiOff, Router, MapPin, Tag, Edit,
-  ChevronLeft, ChevronRight, Users, Save, Search, X, Pencil,
+  ChevronLeft, ChevronRight, Users, Save, Search, X, Pencil, Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -597,6 +597,72 @@ function TagihanForm({
   );
 }
 
+// ── Modal Konfirmasi Hapus ────────────────────────────────────────────────────
+function ConfirmDeleteModal({
+  nama, onConfirm, onCancel, deleting, error,
+}: {
+  nama: string; onConfirm: () => void; onCancel: () => void; deleting: boolean; error: string;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget && !deleting) onCancel(); }}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{ background: "#141C33", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 20px 50px -10px rgba(0,0,0,0.6)" }}
+      >
+        <div className="p-5 flex items-start gap-3 border-b border-white/10">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: "rgba(227,51,51,0.2)" }}
+          >
+            <Trash2 className="w-5 h-5" style={{ color: "#f88" }} />
+          </div>
+          <div>
+            <p className="font-bold text-white">Hapus Pelanggan?</p>
+            <p className="text-sm text-blue-200/60 mt-0.5">
+              Ini akan menghapus <span className="font-semibold text-white">{nama}</span> beserta
+              seluruh riwayat tagihannya secara permanen. Tindakan ini tidak dapat dibatalkan.
+            </p>
+          </div>
+        </div>
+
+        {error && (
+          <div
+            className="mx-5 mt-4 text-sm font-medium rounded-xl px-4 py-2.5"
+            style={{ background: "rgba(227,51,51,0.15)", color: "#f88", border: "1px solid rgba(227,51,51,0.3)" }}
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="p-5 flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={deleting}
+            className="flex-1 h-11 rounded-xl border border-white/20 text-blue-200 font-semibold text-sm hover:bg-white/10 disabled:opacity-50 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={deleting}
+            className="flex-1 h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
+            style={{ background: "#E33333", color: "#ffffff" }}
+          >
+            {deleting
+              ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menghapus...</>
+              : <><Trash2 className="w-4 h-4" /> Ya, Hapus</>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Info Pelanggan Card (mode tampil) ─────────────────────────────────────────
 // shared glass card style for detail page
 const glassCard: React.CSSProperties = {
@@ -608,9 +674,9 @@ const glassCard: React.CSSProperties = {
 const iconBox = "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/10";
 
 function InfoPelangganCard({
-  data, currentStatus, onEdit,
+  data, currentStatus, onEdit, onDelete,
 }: {
-  data: PelangganDetail; currentStatus: StatusTagihan; onEdit: () => void;
+  data: PelangganDetail; currentStatus: StatusTagihan; onEdit: () => void; onDelete: () => void;
 }) {
   const openWhatsApp = () => {
     const no = data.noWhatsapp?.replace(/\D/g, "").replace(/^0/, "62") ?? "";
@@ -638,14 +704,26 @@ function InfoPelangganCard({
           <p className="font-bold text-white text-lg leading-tight truncate">{data.nama}</p>
           {data.nomorUrut && <p className="text-xs text-blue-200/60">No. {data.nomorUrut}</p>}
         </div>
-        <button
-          onClick={onEdit}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-blue-200/70 hover:bg-white/15 hover:text-white transition-colors shrink-0"
-          style={{ background: "rgba(255,255,255,0.08)" }}
-          title="Edit pelanggan"
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={onEdit}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-blue-200/70 hover:bg-white/15 hover:text-white transition-colors"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+            title="Edit pelanggan"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+            style={{ background: "rgba(227,51,51,0.15)", color: "#f88" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.25)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(227,51,51,0.15)")}
+            title="Hapus pelanggan"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Body */}
@@ -744,6 +822,11 @@ function DetailContent({ id }: { id: string }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editOk, setEditOk]       = useState(false);
 
+  // Hapus pelanggan
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting]     = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
   const fetchData = useCallback(async (b: number, t: number) => {
     setLoading(true); setError("");
     try {
@@ -768,6 +851,23 @@ function DetailContent({ id }: { id: string }) {
     await fetchData(periode.bulan, periode.tahun);
     setTimeout(() => setEditOk(false), 3000);
   };
+
+const handleDelete = async () => {
+  if (!data) return; // guard: TypeScript butuh ini biar tau data pasti ada di bawah sini
+
+  setDeleting(true); setDeleteError("");
+  try {
+    const res = await fetch(`/api/pelanggan/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      throw new Error(j.error ?? "Gagal menghapus pelanggan.");
+    }
+    router.push(`/pelanggan?deleted=${encodeURIComponent(data.nama)}`);
+  } catch (e: unknown) {
+    setDeleteError(e instanceof Error ? e.message : "Gagal menghapus pelanggan.");
+    setDeleting(false);
+  }
+};
 
   const now = getBulanTahunSekarang();
   const isSekarang      = periode.bulan === now.bulan && periode.tahun === now.tahun;
@@ -911,6 +1011,7 @@ function DetailContent({ id }: { id: string }) {
                 data={data}
                 currentStatus={currentStatus}
                 onEdit={() => setIsEditing(true)}
+                onDelete={() => { setDeleteError(""); setShowDeleteConfirm(true); }}
               />
             )}
           </div>
@@ -1005,6 +1106,17 @@ function DetailContent({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      {/* Modal konfirmasi hapus */}
+      {showDeleteConfirm && (
+        <ConfirmDeleteModal
+          nama={data.nama}
+          deleting={deleting}
+          error={deleteError}
+          onConfirm={handleDelete}
+          onCancel={() => { if (!deleting) setShowDeleteConfirm(false); }}
+        />
+      )}
     </AppShell>
   );
 }

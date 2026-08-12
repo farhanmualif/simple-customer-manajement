@@ -121,3 +121,35 @@ export async function PATCH(
     return NextResponse.json({ error: "Gagal mengupdate pelanggan" }, { status: 500 });
   }
 }
+
+// DELETE /api/pelanggan/[id] — hapus pelanggan beserta riwayat tagihannya
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return NextResponse.json({ error: "Tidak terautentikasi" }, { status: 401 });
+    }
+
+    const { id } = params;
+
+    const existing = await prisma.pelanggan.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Pelanggan tidak ditemukan" }, { status: 404 });
+    }
+
+    // Hapus riwayat tagihan dulu, baru pelanggannya — dibungkus transaction
+    // biar konsisten kalau salah satu gagal (rollback semua).
+    await prisma.$transaction([
+      prisma.tagihan.deleteMany({ where: { pelangganId: id } }),
+      prisma.pelanggan.delete({ where: { id } }),
+    ]);
+
+    return NextResponse.json({ data: { id }, message: "Pelanggan berhasil dihapus" });
+  } catch (error) {
+    console.error("[DELETE /api/pelanggan/[id]]", error);
+    return NextResponse.json({ error: "Gagal menghapus pelanggan" }, { status: 500 });
+  }
+}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search, Plus, X, Wifi, Users, CheckCircle2, Clock, WifiOff,
   ChevronLeft, ChevronRight, Calendar, Filter,
+  UserPlus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AppShell } from "@/components/AppShell";
@@ -209,6 +210,25 @@ function PelangganListContent() {
   const [tanggalBayar, setTanggalBayar]     = useState(""); // YYYY-MM-DD
   const [jatuhTempo, setJatuhTempo]         = useState(""); // "1"-"31"
   const LIMIT = 20;
+    // ── Notif hapus berhasil ──
+  const [toast, setToast] = useState<{ type: "deleted" | "added"; nama: string } | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+  const deletedNama = searchParams.get("deleted");
+  const addedNama   = searchParams.get("added");
+  const nama = deletedNama ?? addedNama;
+  const type: "deleted" | "added" | null = deletedNama ? "deleted" : addedNama ? "added" : null;
+
+  if (nama && type) {
+    setToast({ type, nama });
+    router.replace(`/pelanggan?bulan=${periode.bulan}&tahun=${periode.tahun}&filter=${filter}`, { scroll: false });
+    toastTimerRef.current = setTimeout(() => setToast(null), 4000);
+  }
+  return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 350);
@@ -277,6 +297,39 @@ function PelangganListContent() {
       pageSubtitle={formatBulanTahun(periode.bulan, periode.tahun)}
       headerRight={headerRight}
     >
+
+      {/* Toast: hapus/tambah berhasil */}
+      {toast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm">
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg animate-in fade-in slide-in-from-top-2"
+            style={
+              toast.type === "added"
+                ? { background: "#254395", border: "1px solid rgba(59,130,246,0.5)" }
+                : { background: "#1F6B37", border: "1px solid rgba(34,163,70,0.5)" }
+            }
+          >
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>
+              {toast.type === "added"
+                ? <UserPlus className="w-4 h-4 text-white" />
+                : <CheckCircle2 className="w-4 h-4 text-white" />
+              }
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white">
+                {toast.type === "added" ? "Pelanggan ditambahkan" : "Pelanggan dihapus"}
+              </p>
+              <p className="text-xs text-blue-100/80 truncate">
+                {toast.nama} {toast.type === "added" ? "berhasil ditambahkan ke daftar" : "berhasil dihapus dari daftar"}
+              </p>
+            </div>
+            <button onClick={() => setToast(null)} className="shrink-0">
+              <X className="w-4 h-4 text-white/70 hover:text-white" />
+            </button>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-col h-full min-h-[calc(100vh-73px)]">
 
         {/* ── Mobile: periode chip ── */}
